@@ -13,26 +13,32 @@ body {
 
 header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     background-color: #ff6f61;
     padding: 10px 20px;
 }
 
 
-/* Logo links */
+/* Logo */
 
 .logo {
     display: flex;
     align-items: center;
-    font-size: 1.5em;
-    font-weight: bold;
-    color: white;
+    margin-right: 30px;
+    /* Abstand zur Navigation */
 }
 
 .logo img {
-    height: 60px;
-    margin-right: 10px;
+    height: 150px;
+    max-height: 160px;
+    margin: 20px 0;
+    transition: transform 0.3s ease;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.logo img:hover {
+    transform: scale(1.05);
 }
 
 
