@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Registrierung – Snackery</title>
+
+    <!-- Verlinkung zum CSS für das Styling -->
+    <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- JavaScript-Datei für Formularprüfung im Browser -->
+    <script defer src="../js/register-validation.js"></script>
+</head>
+
+<body>
+
+    <!-- Header mit Logo -->
+    <header>
+        <div class="logo">
+            <!-- Wenn man aufs Logo klickt, kommt man zur Startseite -->
+            <a href="../index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Startseite</a></li>
+                <li><a href="#">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="#">Login</a></li>
+                <li><a href="register.html">Registrieren</a></li>
+            </ul>
+        </nav>
+
+    </header>
+
+    <main style="text-align: center; padding: 40px;">
+        <h1>Registrierung</h1>
+
+        <!-- Registrierungsformular, das beim Abschicken an PHP geschickt wird -->
+        <!-- 'action' gibt an, welche Datei die Daten verarbeitet (PHP) -->
+        <!-- 'method=POST' sorgt dafür, dass die Daten sicher im Hintergrund übermittelt werden -->
+        <form action="../../Backend/register.php" method="POST" id="registerForm">
+
+            <!-- Pflichtfeld für den Namen -->
+            <input type="text" name="name" placeholder="Vollständiger Name" required><br><br>
+
+            <!-- Pflichtfeld für E-Mail (mit automatischer Prüfung durch den Browser) -->
+            <input type="email" name="email" placeholder="E-Mail-Adresse" required><br><br>
+
+            <!-- Pflichtfeld für Adresse -->
+            <input type="text" name="address" placeholder="Adresse" required><br><br>
+
+            <!-- Pflichtfeld für Passwort -->
+            <input type="password" name="password" placeholder="Passwort" required><br><br>
+
+            <!-- Absende-Button -->
+            <button type="submit">Registrieren</button>
+        </form>
+    </main>
+
+    <!-- Footer unten auf der Seite -->
+    <footer>
+        <p>&copy; 2025 Snackery</p>
+    </footer>
+
+</body>
+
+</html>
