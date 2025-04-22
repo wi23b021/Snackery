@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Benutzerverwaltung</title>
+    <!-- Stylesheet für Layout -->
+    <link rel="stylesheet" href="../res/css/style.css">
+</head>
+
+<body>
+
+    <!-- ========== KOPFZEILE MIT NAVIGATION ========== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="admin.html">Adminbereich</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== INHALT ========== -->
+    <main class="admin-container">
+        <h2>Benutzer verwalten</h2>
+        <div id="userTableContainer">
+            <p>🔄 Lade Benutzerliste...</p>
+        </div>
+    </main>
+
+    <!-- ========== FUSSZEILE ========== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+        // AJAX-Request zum Laden der Benutzerliste
+        fetch("../../Backend/logic/requestHandler.php?action=getUsers")
+            .then(response => response.json())
+            .then(users => {
+                const container = document.getElementById("userTableContainer");
+
+                // Wenn Fehler zurückgegeben wurde
+                if (!Array.isArray(users)) {
+                    container.innerHTML = "<p>❌ Fehler beim Laden der Benutzerliste.</p>";
+                    console.error(users);
+                    return;
+                }
+
+                // Wenn keine Benutzer vorhanden sind
+                if (users.length === 0) {
+                    container.innerHTML = "<p>Keine Benutzer vorhanden.</p>";
+                    return;
+                }
+
+                // HTML-Tabelle erzeugen
+                let tableHTML = `
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Benutzername</th>
+                                <th>E-Mail</th>
+                                <th>Vorname</th>
+                                <th>Nachname</th>
+                                <th>Rolle</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                users.forEach(user => {
+                    tableHTML += `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.firstname}</td>
+                            <td>${user.lastname}</td>
+                            <td>
+                                <select data-user-id="${user.id}" class="roleSelect">
+                                    <option value="user" ${user.role === "user" ? "selected" : ""}>User</option>
+                                    <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="deleteUserBtn" data-user-id="${user.id}">Löschen</button>
+                            </td>
+                        </tr>`;
+                });
+
+                tableHTML += "</tbody></table>";
+                container.innerHTML = tableHTML;
+
+                // Event Listener für Rollenänderung (optional: AJAX für persistente Änderung)
+                document.querySelectorAll(".roleSelect").forEach(select => {
+                    select.addEventListener("change", function() {
+                        const userId = this.dataset.userId;
+                        const newRole = this.value;
+                        alert(`🔄 Rolle von Benutzer ${userId} geändert zu ${newRole} (nicht gespeichert)`);
+                        // Optional: fetch POST an Backend zum Speichern
+                    });
+                });
+
+                // Event Listener für Löschfunktion (optional: AJAX)
+                document.querySelectorAll(".deleteUserBtn").forEach(btn => {
+                    btn.addEventListener("click", function() {
+                        const userId = this.dataset.userId;
+                        if (confirm("❗ Benutzer wirklich löschen?")) {
+                            alert(`🗑️ Benutzer ${userId} löschen (Aktion an Backend senden)`);
+                            // Optional: fetch GET oder POST an Backend zum Löschen
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                document.getElementById("userTableContainer").innerHTML =
+                    "<p>❌ Fehler beim Laden der Benutzerliste.</p>";
+                console.error(error);
+            });
+    </script>
+
+</body>
+
+</html>

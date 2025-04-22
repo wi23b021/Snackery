@@ -1,10 +1,6 @@
 <?php
-// Session beenden und alles löschen
-session_start();
-session_unset();
-session_destroy();
-
-// Weiterleitung zur Startseite
-header("Location: ../index.php");
+session_start();         // Session starten, um sie löschen zu können
+session_unset();         // Alle Session-Variablen löschen
+session_destroy();       // Session endgültig zerstören
+header("Location: /Snackery/index.html"); // Weiterleitung zur Startseite
 exit;
-?>

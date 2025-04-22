@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Bestellungen verwalten</title>
+
+    <!-- Globale CSS-Datei -->
+    <link rel="stylesheet" href="../res/css/style.css">
+</head>
+
+<body>
+
+    <!-- ========== KOPFBEREICH ========== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+
+        <!-- Navigation für Admins -->
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="admin_products.html">Produkte</a></li>
+                <li><a href="admin_orders.html">Bestellungen</a></li>
+                <li><a href="admin_users.html">Benutzer</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== HAUPTBEREICH ========== -->
+    <main style="padding: 40px;">
+        <h2>Bestellungen verwalten</h2>
+
+        <!-- Bereich für dynamisch geladene Bestellungen -->
+        <div id="orderTableContainer">
+            <p>🔄 Bestellungen werden geladen...</p>
+        </div>
+    </main>
+
+    <!-- ========== FUSSZEILE ========== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== SCRIPT: Bestellungen per AJAX laden ========== -->
+    <script>
+        // Anfrage ans Backend zum Abrufen der Bestellungen
+        fetch("../../Backend/logic/requestHandler.php?action=getOrders")
+            .then(response => response.json())
+            .then(orders => {
+                const container = document.getElementById("orderTableContainer");
+
+                // Wenn keine Bestellungen vorhanden sind
+                if (orders.length === 0) {
+                    container.innerHTML = "<p>❌ Es wurden noch keine Bestellungen aufgegeben.</p>";
+                    return;
+                }
+
+                // HTML-Tabelle vorbereiten
+                let tableHTML = `
+                    <table border="1" cellpadding="10" cellspacing="0" style="width:100%; background-color: white;">
+                        <thead>
+                            <tr>
+                                <th>Bestell-ID</th>
+                                <th>Benutzer-ID</th>
+                                <th>Datum</th>
+                                <th>Status</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                // Jede Bestellung als Tabellenzeile einfügen
+                orders.forEach(order => {
+                    tableHTML += `
+                        <tr>
+                            <td>${order.id}</td>
+                            <td>${order.user_id}</td>
+                            <td>${order.order_date}</td>
+                            <td>${order.status}</td>
+                            <td>
+                                <!-- Link zur Bearbeitung (z.B. Status ändern) -->
+                                <a href="edit_order.html?id=${order.id}">Bearbeiten</a>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += "</tbody></table>";
+
+                // Tabelle einfügen
+                container.innerHTML = tableHTML;
+            })
+            .catch(error => {
+                console.error("Fehler beim Laden der Bestellungen:", error);
+                document.getElementById("orderTableContainer").innerHTML = "<p>❌ Fehler beim Laden der Daten.</p>";
+            });
+    </script>
+
+</body>
+
+</html>

@@ -1,45 +1,77 @@
-// Warten, bis das DOM vollständig geladen ist
+// Sobald das DOM geladen ist, alle Events setzen
 document.addEventListener("DOMContentLoaded", () => {
-
-    // Das Registrierungsformular über die ID holen
     const form = document.getElementById("registerForm");
+    const usernameInput = form.querySelector("input[name='username']");
+    const emailInput = form.querySelector("input[name='email']");
+    const password = form.querySelector("input[name='password']");
+    const passwordRepeat = form.querySelector("input[name='password_repeat']");
 
-    // Wenn das Formular abgeschickt wird ...
-    form.addEventListener("submit", function(event) {
-        // Eingaben aus den Feldern holen
-        const password = form.password.value;
-        const passwordRepeat = form.password_repeat.value;
+    // Dynamisch Fehleranzeigen erzeugen
+    const createError = (input, message) => {
+        // Vorherige Meldungen löschen
+        const oldError = input.nextElementSibling;
+        if (oldError && oldError.classList.contains("error-message")) {
+            oldError.remove();
+        }
 
-        // Prüfen, ob das Passwort mindestens 6 Zeichen hat
-        if (password.length < 6) {
-            alert("⚠️ Das Passwort muss mindestens 6 Zeichen lang sein.");
-            event.preventDefault(); // Verhindert das Abschicken
+        // Neue Fehlermeldung einfügen
+        const error = document.createElement("div");
+        error.className = "error-message";
+        error.textContent = message;
+        input.insertAdjacentElement("afterend", error);
+    };
+
+    // Fehler entfernen
+    const clearError = (input) => {
+        const oldError = input.nextElementSibling;
+        if (oldError && oldError.classList.contains("error-message")) {
+            oldError.remove();
+        }
+    };
+
+    // Benutzername oder E-Mail prüfen (AJAX)
+    const checkAvailability = () => {
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+
+        if (username && email) {
+            fetch(`../../Backend/requestHandler.php?action=checkUserExists&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.usernameTaken) {
+                        createError(usernameInput, "❌ Benutzername ist bereits vergeben.");
+                    } else {
+                        clearError(usernameInput);
+                    }
+
+                    if (data.emailTaken) {
+                        createError(emailInput, "❌ E-Mail ist bereits registriert.");
+                    } else {
+                        clearError(emailInput);
+                    }
+                });
+        }
+    };
+
+    // Beim Verlassen des Feldes oder beim Tippen prüfen
+    usernameInput.addEventListener("input", checkAvailability);
+    emailInput.addEventListener("input", checkAvailability);
+
+    // Formular absenden verhindern, wenn Fehler bestehen
+    form.addEventListener("submit", (e) => {
+        const errors = form.querySelectorAll(".error-message");
+        if (errors.length > 0) {
+            e.preventDefault(); // Senden stoppen
+            alert("Bitte behebe zuerst die rot markierten Fehler.");
             return;
         }
 
-        // Prüfen, ob beide Passwörter übereinstimmen
-        if (password !== passwordRepeat) {
-            alert("⚠️ Die Passwörter stimmen nicht überein.");
-            event.preventDefault(); // Formular wird nicht abgeschickt
-            return;
+        // Passwortvergleich
+        if (password.value !== passwordRepeat.value) {
+            e.preventDefault();
+            createError(passwordRepeat, "❌ Die Passwörter stimmen nicht überein.");
+        } else {
+            clearError(passwordRepeat);
         }
-
-        // Optionale Prüfung: PLZ sollte nur Ziffern enthalten
-        const plz = form.postalcode.value;
-        if (!/^\d{4,5}$/.test(plz)) {
-            alert("⚠️ Bitte gib eine gültige Postleitzahl ein.");
-            event.preventDefault();
-            return;
-        }
-
-        // Optional: Prüfung der Hausnummer (einfaches Format)
-        const hausnummer = form.housenumber.value;
-        if (!/^[\d]{1,4}[a-zA-Z]?$/.test(hausnummer)) {
-            alert("⚠️ Bitte gib eine gültige Hausnummer ein.");
-            event.preventDefault();
-            return;
-        }
-
-        // Wenn alle Prüfungen bestanden sind, wird das Formular normal abgeschickt
     });
 });

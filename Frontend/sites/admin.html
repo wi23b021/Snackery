@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Adminbereich – Snackery</title>
+
+    <!-- Zentrales CSS für das Design -->
+    <link rel="stylesheet" href="../res/css/style.css">
+</head>
+
+<body>
+
+    <!-- ========== KOPFBEREICH ========== -->
+    <header>
+        <div class="logo">
+            <!-- Klick auf Logo führt zur Startseite -->
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="admin.html">Adminbereich</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="login.html">Logout</a></li>
+                <!-- Wird dynamisch ersetzt -->
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== HAUPTBEREICH ========== -->
+    <main>
+        <div class="profile-container">
+            <h2>Willkommen im Adminbereich</h2>
+            <p>Hier kannst du deinen Shop verwalten:</p>
+
+            <!-- Buttons für Admin-Funktionen -->
+            <ul style="list-style: none; padding: 0; text-align: center;">
+                <li style="margin-bottom: 20px;">
+                    <a class="btn" href="admin_products.html">Produkte verwalten</a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a class="btn" href="admin_orders.html">Bestellungen verwalten</a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a class="btn" href="admin_users.html">Benutzer verwalten</a>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- ========== FUSSZEILE ========== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== OPTIONAL: Dynamischer Login/Logout-Status per JS ========== -->
+    <script>
+        // Beispiel: Loginstatus dynamisch prüfen (für später, wenn du möchtest)
+        // Aktuell nur Platzhalter
+    </script>
+
+</body>
+
+</html>

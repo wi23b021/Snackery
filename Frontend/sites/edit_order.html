@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bestellung bearbeiten – Snackery</title>
+    <link rel="stylesheet" href="../res/css/style.css">
+</head>
+
+<body>
+
+    <!-- ========== KOPF ========== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackeryindex.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="admin.html">Adminbereich</a></li>
+                <li><a href="admin_orders.html">Zurück zu Bestellungen</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== INHALT ========== -->
+    <main class="register-container">
+        <h2>Bestellung bearbeiten</h2>
+
+        <!-- Formular zur Statusänderung -->
+        <form id="editOrderForm">
+            <label for="orderId">Bestell-ID:</label>
+            <input type="number" id="orderId" name="order_id" required>
+
+            <label for="status">Neuer Status:</label>
+            <select id="status" name="status" required>
+            <option value="offen">offen</option>
+            <option value="in Bearbeitung">in Bearbeitung</option>
+            <option value="versendet">versendet</option>
+            <option value="storniert">storniert</option>
+        </select>
+
+            <button type="submit">Änderung speichern</button>
+        </form>
+
+        <!-- Rückmeldung -->
+        <p id="feedback"></p>
+    </main>
+
+    <!-- ========== SCRIPT ========== -->
+    <script>
+        document.getElementById("editOrderForm").addEventListener("submit", function(e) {
+            e.preventDefault(); // Verhindert Neuladen
+
+            const formData = new FormData(this);
+
+            fetch("../../Backend/logic/requestHandler.php?action=editOrder", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const feedback = document.getElementById("feedback");
+                    feedback.textContent = data.message;
+                    feedback.style.color = data.success ? "green" : "red";
+                })
+                .catch(error => {
+                    document.getElementById("feedback").textContent = "Fehler beim Senden.";
+                    console.error("Fehler:", error);
+                });
+        });
+    </script>
+
+</body>
+
+</html>

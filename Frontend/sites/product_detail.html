@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Produktdetails – Snackery</title>
+
+    <!-- Stylesheet für Design -->
+    <link rel="stylesheet" href="../res/css/style.css">
+</head>
+
+<body>
+
+    <!-- ============ KOPFBEREICH MIT NAVIGATION ============ -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ============ PRODUKTDETAIL-ANZEIGE ============ -->
+    <main>
+        <div class="product-detail" id="productContainer">
+            <!-- Inhalt wird mit JavaScript dynamisch geladen -->
+        </div>
+
+        <!-- Button zurück zur Produktübersicht -->
+        <a href="products.html" class="back-link">← Zurück zur Übersicht</a>
+    </main>
+
+    <!-- ============ FUSSZEILE ============ -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============ PRODUKTDETAILS PER AJAX LADEN ============ -->
+    <script>
+        // Diese Funktion wird beim Laden der Seite ausgeführt
+        document.addEventListener("DOMContentLoaded", () => {
+            // Die Produkt-ID wird aus der URL ausgelesen, z.B. ?id=3
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get("id");
+
+            // Wenn keine ID vorhanden ist, zeige eine Fehlermeldung
+            if (!productId) {
+                document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
+                return;
+            }
+
+            // Anfrage an das Backend schicken, um das Produkt zu laden
+            fetch(`../../Backend/logic/requestHandler.php?action=getProducts`)
+                .then(response => response.json())
+                .then(products => {
+                    // Das richtige Produkt nach ID suchen
+                    const product = products.find(p => p.id == productId);
+
+                    // Wenn Produkt nicht gefunden wurde
+                    if (!product) {
+                        document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
+                        return;
+                    }
+
+                    // HTML für die Produktanzeige einfügen
+                    document.getElementById("productContainer").innerHTML = `
+                <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
+                <div class="product-info">
+                    <h2>${product.name}</h2>
+                    <p>${product.description}</p>
+                    <p class="price">€ ${parseFloat(product.price).toFixed(2)}</p>
+                    <p><strong>Kategorie:</strong> ${product.category}</p>
+                    <p><strong>Herkunftsland:</strong> ${product.origin_country}</p>
+                    <p><strong>Verfügbar:</strong> ${product.stock} Stück</p>
+                </div>
+            `;
+                })
+                .catch(error => {
+                    console.error("❌ Fehler beim Laden des Produkts:", error);
+                    document.getElementById("productContainer").innerHTML = "<h2>⚠️ Fehler beim Laden des Produkts.</h2>";
+                });
+        });
+    </script>
+
+</body>
+
+</html>

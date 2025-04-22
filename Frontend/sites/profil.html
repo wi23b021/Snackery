@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Profil bearbeiten – Snackery</title>
+    <link rel="stylesheet" href="../res/css/style.css">
+    <script>
+        // Wird ausgeführt, sobald die Seite fertig geladen ist
+        document.addEventListener("DOMContentLoaded", () => {
+            // 🔄 Profil vom Server laden
+            fetch("../../Backend/logic/requestHandler.php?action=getProfile", {
+                    credentials: "include" // ➕ WICHTIG: Session-Cookie mitschicken!
+                })
+                .then(res => res.json())
+                .then(user => {
+                    // ❌ Falls kein Benutzer geladen wird → Weiterleitung zur Login-Seite
+                    if (!user || !user.id) {
+                        window.location.href = "login.html";
+                        return;
+                    }
+
+                    // ✅ Felder mit Benutzerdaten befüllen
+                    for (const field in user) {
+                        const input = document.querySelector(`[name="${field}"]`);
+                        if (input) input.value = user[field];
+                    }
+
+                    // ➕ Adminlink sichtbar machen, falls Rolle "admin"
+                    if (user.role === "admin") {
+                        document.getElementById("adminLink").style.display = "inline";
+                    }
+                })
+                .catch(() => {
+                    // ❌ Fehler beim Laden → Weiterleitung zur Login-Seite
+                    alert("Fehler beim Laden des Profils.");
+                    window.location.href = "login.html";
+                });
+
+            // 📝 Formular absenden (Profil aktualisieren)
+            document.getElementById("profileForm").addEventListener("submit", (e) => {
+                e.preventDefault(); // Kein Neuladen der Seite
+
+                const formData = new FormData(e.target);
+
+                fetch("../../Backend/logic/requestHandler.php?action=updateProfile", {
+                        method: "POST",
+                        body: formData,
+                        credentials: "include"
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert(data.success ? "✅ Profil aktualisiert!" : "❌ Fehler: " + data.message);
+                    })
+                    .catch(() => alert("❌ Fehler beim Speichern."));
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+    <!-- ========== KOPFBEREICH ========== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a id="adminLink" href="admin.html" style="display: none;">Adminbereich</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== INHALT ========== -->
+    <main>
+        <div class="profile-container">
+            <h2>Profil bearbeiten</h2>
+
+            <!-- ✅ Profilformular -->
+            <form id="profileForm">
+                <input type="text" name="firstname" placeholder="Vorname" required>
+                <input type="text" name="lastname" placeholder="Nachname" required>
+                <input type="email" name="email" placeholder="E-Mail" required>
+                <input type="text" name="street" placeholder="Straße" required>
+                <input type="text" name="housenumber" placeholder="Hausnummer" required>
+                <input type="text" name="postalcode" placeholder="PLZ" required>
+                <input type="text" name="city" placeholder="Ort" required>
+
+                <!-- Zahlungsdaten (optional) -->
+                <input type="text" name="iban" placeholder="IBAN">
+                <input type="text" name="cardnumber" placeholder="Kartennummer">
+                <input type="text" name="bankname" placeholder="Bankname">
+
+                <!-- Passwortänderung -->
+                <input type="password" name="current_password" placeholder="Aktuelles Passwort" required>
+                <input type="password" name="new_password" placeholder="Neues Passwort (optional)">
+                <input type="password" name="new_password_repeat" placeholder="Neues Passwort wiederholen">
+
+                <button type="submit">Profil aktualisieren</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- ========== FUßBEREICH ========== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

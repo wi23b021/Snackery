@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Produkt bearbeiten – Snackery</title>
+    <!-- CSS einbinden -->
+    <link rel="stylesheet" href="../res/css/style.css">
+</head>
+
+<body>
+
+    <!-- ========== KOPFZEILE ========== -->
+    <header>
+        <div class="logo">
+            <!-- Logo mit Link zur Startseite -->
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <!-- Navigation -->
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="admin_products.html">Zurück</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== HAUPTBEREICH ========== -->
+    <main>
+        <div class="register-container">
+            <h2>Produkt bearbeiten</h2>
+
+            <!-- Formular zum Bearbeiten des Produkts -->
+            <form id="editProductForm">
+                <!-- Eingabefelder, die später per JavaScript befüllt werden -->
+                <input type="text" id="name" placeholder="Produktname" required>
+                <input type="number" step="0.01" id="price" placeholder="Preis (€)" required>
+                <input type="text" id="category" placeholder="Kategorie" required>
+
+                <!-- Speichern-Button -->
+                <button type="submit">Speichern</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+        // 1. Produkt-ID aus der URL auslesen
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        // Wenn keine Produkt-ID vorhanden ist, zurück zur Produktübersicht
+        if (!productId) {
+            window.location.href = 'admin_products.html';
+        }
+
+        // 2. Produktdaten mit fetch() laden (GET-Request an Backend)
+        fetch(`../../Backend/logic/requestHandler.php?action=getProduct&id=${productId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Netzwerkfehler");
+                }
+                return response.json();
+            })
+            .then(product => {
+                // Produktdaten in das Formular einfügen
+                document.getElementById('name').value = product.name;
+                document.getElementById('price').value = product.price;
+                document.getElementById('category').value = product.category;
+            })
+            .catch(error => {
+                // Fehlerbehandlung, falls z. B. Produkt nicht existiert
+                alert("❌ Fehler beim Laden des Produkts.");
+                console.error(error);
+            });
+
+        // 3. Formular absenden → Produkt aktualisieren
+        document.getElementById("editProductForm").addEventListener("submit", function(e) {
+            e.preventDefault(); // Verhindert Neuladen der Seite
+
+            // Neue Produktdaten aus dem Formular auslesen
+            const updatedProduct = {
+                name: document.getElementById("name").value,
+                price: document.getElementById("price").value,
+                category: document.getElementById("category").value
+            };
+
+            // AJAX-Request an das Backend senden (POST mit JSON-Body)
+            fetch(`../../Backend/logic/requestHandler.php?action=updateProduct&id=${productId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(updatedProduct)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert("✅ Produkt erfolgreich aktualisiert!");
+                        window.location.href = "admin_products.html";
+                    } else {
+                        alert("❌ Fehler beim Speichern.");
+                    }
+                })
+                .catch(error => {
+                    alert("❌ Serverfehler beim Speichern.");
+                    console.error(error);
+                });
+        });
+    </script>
+
+</body>
+
+</html>

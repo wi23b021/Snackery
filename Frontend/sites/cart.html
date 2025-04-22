@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Warenkorb – Snackery</title>
+
+    <!-- Zentrale CSS-Datei -->
+    <link rel="stylesheet" href="../res/css/style.css">
+</head>
+
+<body>
+
+    <!-- ========== KOPFBEREICH ========== -->
+    <header>
+        <div class="logo">
+            <!-- Logo führt zurück zur Startseite -->
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Registrierung</a></li>
+                <!-- Weitere Links (z. B. Login, Profil, Adminbereich) werden dynamisch per JavaScript ergänzt -->
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== HAUPTBEREICH ========== -->
+    <main style="text-align: center; padding: 50px;">
+        <h1>🛒 Dein Warenkorb</h1>
+        <p>Hier erscheinen deine ausgewählten Snacks.</p>
+
+        <!-- Container für die Warenkorb-Produkte -->
+        <div id="cartItems"></div>
+
+        <!-- Button zum Zurücksetzen des Warenkorbs -->
+        <button id="clearCartBtn">Warenkorb leeren</button>
+    </main>
+
+    <!-- ========== FUßBEREICH ========== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== JAVASCRIPT FÜR DEN WARENKORB ========== -->
+    <script>
+        // Funktion zum Laden der Warenkorb-Items aus dem Local Storage
+        function loadCart() {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const cartItemsContainer = document.getElementById("cartItems");
+            cartItemsContainer.innerHTML = "";
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
+                return;
+            }
+
+            // Für jedes Produkt im Warenkorb eine Darstellung erzeugen
+            cart.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "cart-item";
+                div.innerHTML = `
+                    <p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
+                `;
+                cartItemsContainer.appendChild(div);
+            });
+        }
+
+        // Funktion zum Warenkorb-Leeren
+        document.getElementById("clearCartBtn").addEventListener("click", () => {
+            localStorage.removeItem("cart");
+            loadCart();
+            alert("🧹 Warenkorb geleert!");
+        });
+
+        // Beim Laden der Seite Warenkorb anzeigen
+        window.addEventListener("DOMContentLoaded", loadCart);
+    </script>
+
+</body>
+
+</html>
