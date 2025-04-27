@@ -1,21 +1,29 @@
 <?php
-// Verbindung zur Datenbank einbinden
+// 
+// Snackery – Datenhandler für Produktabfragen (dataHandler.php)
+// Stellt Funktionen zur Verfügung, um Produktdaten aus der Datenbank abzurufen.
+// 
+
+// Verbindung zur Datenbank importieren
 require_once __DIR__ . '/dbaccess.php';
 
 /**
  * Holt alle Produkte aus der Datenbank.
- * @return array Ein Array mit allen Produktdaten
+ *
+ * @return array Ein Array mit allen Produkten
  */
 function getAllProducts() {
-    // Datenbankverbindung aufbauen
+    // 1. Verbindung zur Datenbank aufbauen
     $db = new DbAccess();
     $conn = $db->connect();
 
-    // SQL-Befehl zum Abrufen aller Produkte (neueste zuerst)
+    // 2. SQL-Statement vorbereiten
     $stmt = $conn->prepare("SELECT * FROM products ORDER BY created_at DESC");
+    
+    // 3. Statement ausführen
     $stmt->execute();
 
-    // Produkte als assoziatives Array zurückgeben
+    // 4. Alle Produkte als assoziatives Array zurückgeben
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>

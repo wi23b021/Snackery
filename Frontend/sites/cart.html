@@ -1,3 +1,8 @@
+<!-- 
+    Snackery – Warenkorbseite
+    Zeigt Produkte aus dem LocalStorage an und berechnet automatisch die Gesamtsumme.
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
@@ -14,13 +19,11 @@
     <!-- ========== KOPFBEREICH ========== -->
     <header>
         <div class="logo">
-            <!-- Logo führt zurück zur Startseite -->
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
@@ -28,7 +31,6 @@
                 <li><a href="cart.html">Warenkorb</a></li>
                 <li><a href="login.html">Login</a></li>
                 <li><a href="register.html">Registrierung</a></li>
-                <!-- Weitere Links (z. B. Login, Profil, Adminbereich) werden dynamisch per JavaScript ergänzt -->
             </ul>
         </nav>
     </header>
@@ -36,12 +38,10 @@
     <!-- ========== HAUPTBEREICH ========== -->
     <main style="text-align: center; padding: 50px;">
         <h1>🛒 Dein Warenkorb</h1>
-        <p>Hier erscheinen deine ausgewählten Snacks.</p>
-
-        <!-- Container für die Warenkorb-Produkte -->
         <div id="cartItems"></div>
 
-        <!-- Button zum Zurücksetzen des Warenkorbs -->
+        <h3 id="totalPrice">Gesamt: € 0.00</h3>
+
         <button id="clearCartBtn">Warenkorb leeren</button>
     </main>
 
@@ -58,36 +58,56 @@
 
     <!-- ========== JAVASCRIPT FÜR DEN WARENKORB ========== -->
     <script>
-        // Funktion zum Laden der Warenkorb-Items aus dem Local Storage
+        // Warenkorb laden und anzeigen
         function loadCart() {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
             const cartItemsContainer = document.getElementById("cartItems");
+            const totalPriceElement = document.getElementById("totalPrice");
+
             cartItemsContainer.innerHTML = "";
 
             if (cart.length === 0) {
                 cartItemsContainer.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
+                totalPriceElement.textContent = "Gesamt: € 0.00";
                 return;
             }
 
-            // Für jedes Produkt im Warenkorb eine Darstellung erzeugen
+            let total = 0;
+
             cart.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "cart-item";
                 div.innerHTML = `
                     <p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
+                    <button onclick="removeFromCart(${item.id})">🗑️ Entfernen</button>
                 `;
                 cartItemsContainer.appendChild(div);
+
+                total += item.price * item.quantity;
             });
+
+            // Gesamtsumme anzeigen
+            totalPriceElement.textContent = `Gesamt: € ${total.toFixed(2)}`;
         }
 
-        // Funktion zum Warenkorb-Leeren
+        // Produkt aus dem Warenkorb entfernen
+        function removeFromCart(productId) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+            cart = cart.filter(item => item.id !== productId);
+
+            localStorage.setItem("cart", JSON.stringify(cart));
+            loadCart();
+        }
+
+        // Warenkorb komplett leeren
         document.getElementById("clearCartBtn").addEventListener("click", () => {
             localStorage.removeItem("cart");
             loadCart();
             alert("🧹 Warenkorb geleert!");
         });
 
-        // Beim Laden der Seite Warenkorb anzeigen
+        // Beim Laden der Seite
         window.addEventListener("DOMContentLoaded", loadCart);
     </script>
 

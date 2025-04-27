@@ -1,21 +1,31 @@
+<!-- 
+    Snackery – Produkt löschen (delete_product.html)
+    Diese Seite löscht ein Produkt basierend auf der ID in der URL.
+    Technologien: HTML5, CSS, JavaScript (AJAX)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <title>Produkt löschen – Snackery</title>
+
+    <!-- Verknüpfung mit globalem Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ========== HEADER ========== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
+        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
@@ -24,7 +34,7 @@
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ==================== LÖSCHBESTÄTIGUNG ==================== -->
     <main>
         <div class="register-container">
             <h2>Produkt wird gelöscht...</h2>
@@ -32,18 +42,18 @@
         </div>
     </main>
 
-    <!-- ========== JAVASCRIPT ========== -->
+    <!-- ==================== JAVASCRIPT: PRODUKT LÖSCHEN ==================== -->
     <script>
-        // ID aus der URL auslesen
+        // Produkt-ID aus der URL lesen
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
 
-        // Wenn keine ID übergeben wurde, zur Adminseite zurück
         if (!productId) {
+            // Falls keine ID vorhanden ist, zurück zur Produktübersicht
             window.location.href = "admin_products.html";
         }
 
-        // AJAX-Request an das Backend zum Löschen des Produkts
+        // Produkt löschen via Fetch
         fetch(`../../Backend/logic/requestHandler.php?action=deleteProduct&id=${productId}`, {
                 method: "DELETE"
             })
@@ -54,7 +64,7 @@
                 } else {
                     alert("❌ Fehler beim Löschen des Produkts.");
                 }
-                // Zurück zur Produktübersicht
+                // Zurück zur Produktliste
                 window.location.href = "admin_products.html";
             })
             .catch(error => {

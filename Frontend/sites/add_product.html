@@ -1,15 +1,23 @@
+<!-- 
+    Snackery – Neues Produkt hinzufügen (add_product.html)
+    Diese Seite erlaubt Admins, neue Produkte in den Shop einzufügen.
+    Technologien: HTML5, CSS, JavaScript (AJAX für Datei-Upload)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
-    <title>Neues Produkt hinzufügen</title>
+    <title>Neues Produkt hinzufügen – Snackery</title>
+
+    <!-- Verknüpfung mit dem globalen Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ========== KOPFBEREICH ========== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
             <a href="/Snackery/index.html">
@@ -27,7 +35,7 @@
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ==================== PRODUKTHINZUFÜGUNG ==================== -->
     <main class="admin-container">
         <h2>Neues Produkt hinzufügen</h2>
 
@@ -44,11 +52,11 @@
             <button type="submit">Produkt speichern</button>
         </form>
 
-        <!-- Nachricht bei Erfolg oder Fehler -->
+        <!-- Platz für Erfolgs- oder Fehlermeldungen -->
         <p id="message"></p>
     </main>
 
-    <!-- ========== FUSSZEILE ========== -->
+    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -59,18 +67,18 @@
         </div>
     </footer>
 
-    <!-- ========== SCRIPT: Formularverarbeitung ========== -->
+    <!-- ==================== JAVASCRIPT: PRODUKT SPEICHERN ==================== -->
     <script>
         const form = document.getElementById("productForm");
         const message = document.getElementById("message");
 
+        // Formular absenden
         form.addEventListener("submit", function(event) {
-            event.preventDefault(); // Seite nicht neu laden
+            event.preventDefault(); // Kein Neuladen der Seite
 
-            // Formulardaten erfassen
             const formData = new FormData(form);
 
-            // AJAX-Anfrage zum Backend senden
+            // Sende Produktdaten + Bild an das Backend
             fetch("../../Backend/logic/requestHandler.php?action=addProduct", {
                     method: "POST",
                     body: formData

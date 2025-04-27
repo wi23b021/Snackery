@@ -1,3 +1,8 @@
+<!-- 
+    Snackery – Produktdetailseite mit Warenkorb-Button
+    Technologien: HTML5, CSS, JavaScript (AJAX, LocalStorage)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
@@ -5,13 +10,13 @@
     <meta charset="UTF-8">
     <title>Produktdetails – Snackery</title>
 
-    <!-- Stylesheet für Design -->
+    <!-- Stylesheet für das Design -->
     <link rel="stylesheet" href="../res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ============ KOPFBEREICH MIT NAVIGATION ============ -->
+    <!-- ============ KOPFBEREICH ============ -->
     <header>
         <div class="logo">
             <a href="/Snackery/index.html">
@@ -29,10 +34,10 @@
         </nav>
     </header>
 
-    <!-- ============ PRODUKTDETAIL-ANZEIGE ============ -->
+    <!-- ============ PRODUKTDETAILBEREICH ============ -->
     <main>
         <div class="product-detail" id="productContainer">
-            <!-- Inhalt wird mit JavaScript dynamisch geladen -->
+            <!-- Produktdaten werden per JS geladen -->
         </div>
 
         <!-- Button zurück zur Produktübersicht -->
@@ -50,51 +55,77 @@
         </div>
     </footer>
 
-    <!-- ============ PRODUKTDETAILS PER AJAX LADEN ============ -->
+    <!-- ============ JAVASCRIPT ============ -->
     <script>
-        // Diese Funktion wird beim Laden der Seite ausgeführt
+        // Sobald die Seite geladen ist
         document.addEventListener("DOMContentLoaded", () => {
-            // Die Produkt-ID wird aus der URL ausgelesen, z.B. ?id=3
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get("id");
 
-            // Wenn keine ID vorhanden ist, zeige eine Fehlermeldung
+            // Wenn keine Produkt-ID vorhanden → Fehlermeldung
             if (!productId) {
                 document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
                 return;
             }
 
-            // Anfrage an das Backend schicken, um das Produkt zu laden
+            // Produktdaten vom Server abrufen
             fetch(`../../Backend/logic/requestHandler.php?action=getProducts`)
                 .then(response => response.json())
                 .then(products => {
-                    // Das richtige Produkt nach ID suchen
                     const product = products.find(p => p.id == productId);
 
-                    // Wenn Produkt nicht gefunden wurde
                     if (!product) {
                         document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
                         return;
                     }
 
-                    // HTML für die Produktanzeige einfügen
+                    // HTML erzeugen inklusive "In den Warenkorb"-Button
                     document.getElementById("productContainer").innerHTML = `
-                <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
-                <div class="product-info">
-                    <h2>${product.name}</h2>
-                    <p>${product.description}</p>
-                    <p class="price">€ ${parseFloat(product.price).toFixed(2)}</p>
-                    <p><strong>Kategorie:</strong> ${product.category}</p>
-                    <p><strong>Herkunftsland:</strong> ${product.origin_country}</p>
-                    <p><strong>Verfügbar:</strong> ${product.stock} Stück</p>
-                </div>
-            `;
+                        <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
+                        <div class="product-info">
+                            <h2>${product.name}</h2>
+                            <p>${product.description}</p>
+                            <p class="price">€ ${parseFloat(product.price).toFixed(2)}</p>
+                            <p><strong>Kategorie:</strong> ${product.category}</p>
+                            <p><strong>Herkunftsland:</strong> ${product.origin_country}</p>
+                            <p><strong>Verfügbar:</strong> ${product.stock} Stück</p>
+                            <button id="addToCartBtn">🛒 In den Warenkorb</button>
+                        </div>
+                    `;
+
+                    // Warenkorb-Button aktivieren
+                    document.getElementById("addToCartBtn").addEventListener("click", () => {
+                        addToCart(product);
+                    });
                 })
                 .catch(error => {
                     console.error("❌ Fehler beim Laden des Produkts:", error);
                     document.getElementById("productContainer").innerHTML = "<h2>⚠️ Fehler beim Laden des Produkts.</h2>";
                 });
         });
+
+        // Produkt zum Local Storage Warenkorb hinzufügen
+        function addToCart(product) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+            const existingProduct = cart.find(item => item.id === product.id);
+
+            if (existingProduct) {
+                // Menge erhöhen
+                existingProduct.quantity += 1;
+            } else {
+                // Neues Produkt hinzufügen
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: parseFloat(product.price),
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem("cart", JSON.stringify(cart));
+            alert("✅ Produkt wurde zum Warenkorb hinzugefügt!");
+        }
     </script>
 
 </body>

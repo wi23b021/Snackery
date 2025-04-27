@@ -1,22 +1,31 @@
+<!-- 
+    Snackery – Benutzerverwaltung (admin_users.html)
+    Diese Seite zeigt alle registrierten Benutzer für Admins an.
+    Technologien: HTML5, CSS, JavaScript (AJAX)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <title>Admin – Benutzerverwaltung</title>
-    <!-- Stylesheet für Layout -->
+
+    <!-- Einbinden des globalen Stylesheets -->
     <link rel="stylesheet" href="../res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ========== KOPFZEILE MIT NAVIGATION ========== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
+        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
@@ -29,15 +38,17 @@
         </nav>
     </header>
 
-    <!-- ========== INHALT ========== -->
+    <!-- ==================== BENUTZERVERWALTUNG ==================== -->
     <main class="admin-container">
         <h2>Benutzer verwalten</h2>
+
+        <!-- Bereich, wo die Benutzertabelle geladen wird -->
         <div id="userTableContainer">
             <p>🔄 Lade Benutzerliste...</p>
         </div>
     </main>
 
-    <!-- ========== FUSSZEILE ========== -->
+    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -48,28 +59,26 @@
         </div>
     </footer>
 
-    <!-- ========== JAVASCRIPT ========== -->
+    <!-- ==================== JAVASCRIPT: BENUTZER LADEN ==================== -->
     <script>
-        // AJAX-Request zum Laden der Benutzerliste
+        // AJAX-Request zum Laden der Benutzer
         fetch("../../Backend/logic/requestHandler.php?action=getUsers")
             .then(response => response.json())
             .then(users => {
                 const container = document.getElementById("userTableContainer");
 
-                // Wenn Fehler zurückgegeben wurde
                 if (!Array.isArray(users)) {
                     container.innerHTML = "<p>❌ Fehler beim Laden der Benutzerliste.</p>";
                     console.error(users);
                     return;
                 }
 
-                // Wenn keine Benutzer vorhanden sind
                 if (users.length === 0) {
                     container.innerHTML = "<p>Keine Benutzer vorhanden.</p>";
                     return;
                 }
 
-                // HTML-Tabelle erzeugen
+                // Tabelle erzeugen
                 let tableHTML = `
                     <table class="admin-table">
                         <thead>
@@ -108,30 +117,28 @@
                 tableHTML += "</tbody></table>";
                 container.innerHTML = tableHTML;
 
-                // Event Listener für Rollenänderung (optional: AJAX für persistente Änderung)
+                // Rollenauswahl (Änderung)
                 document.querySelectorAll(".roleSelect").forEach(select => {
                     select.addEventListener("change", function() {
                         const userId = this.dataset.userId;
                         const newRole = this.value;
-                        alert(`🔄 Rolle von Benutzer ${userId} geändert zu ${newRole} (nicht gespeichert)`);
-                        // Optional: fetch POST an Backend zum Speichern
+                        alert(`🔄 Rolle von Benutzer ${userId} geändert zu ${newRole} (noch nicht gespeichert).`);
                     });
                 });
 
-                // Event Listener für Löschfunktion (optional: AJAX)
+                // Benutzer löschen (nur Simulation hier)
                 document.querySelectorAll(".deleteUserBtn").forEach(btn => {
                     btn.addEventListener("click", function() {
                         const userId = this.dataset.userId;
                         if (confirm("❗ Benutzer wirklich löschen?")) {
-                            alert(`🗑️ Benutzer ${userId} löschen (Aktion an Backend senden)`);
-                            // Optional: fetch GET oder POST an Backend zum Löschen
+                            alert(`🗑️ Benutzer ${userId} löschen (Aktion an Backend senden).`);
                         }
                     });
                 });
+
             })
             .catch(error => {
-                document.getElementById("userTableContainer").innerHTML =
-                    "<p>❌ Fehler beim Laden der Benutzerliste.</p>";
+                document.getElementById("userTableContainer").innerHTML = "<p>❌ Fehler beim Laden der Benutzer.</p>";
                 console.error(error);
             });
     </script>

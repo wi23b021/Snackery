@@ -1,3 +1,9 @@
+<!-- 
+    Snackery – Produktübersicht (products.html)
+    Diese Seite zeigt alle verfügbaren Produkte mit Filter- und Suchfunktion.
+    Technologien: HTML5, CSS, JavaScript (AJAX-Fetch)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
@@ -5,22 +11,22 @@
     <meta charset="UTF-8">
     <title>Produkte – Snackery</title>
 
-    <!-- Verknüpfung mit der globalen CSS-Datei -->
+    <!-- Verknüpfung mit globaler CSS-Datei -->
     <link rel="stylesheet" href="../res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ========== KOPFBEREICH ========== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <!-- Logo, das zur Startseite führt -->
+            <!-- Klick auf Logo führt zur Startseite -->
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigationsleiste -->
+        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
@@ -28,31 +34,30 @@
                 <li><a href="cart.html">Warenkorb</a></li>
                 <li><a href="login.html">Login</a></li>
                 <li><a href="register.html">Registrierung</a></li>
-                <!-- Weitere Links (Login/Profil) werden später über JavaScript dynamisch ergänzt -->
             </ul>
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ==================== PRODUKTÜBERSICHT ==================== -->
     <main>
         <h2>Unsere Snacks</h2>
 
-        <!-- Filterbereich für Suche und Kategorie -->
+        <!-- Filterbereich für Suche und Kategorien -->
         <section class="filter-section">
             <input type="text" id="searchInput" placeholder="🔍 Nach Produkt suchen...">
             <select id="categoryFilter">
-            <option value="">Alle Kategorien</option>
-            <option value="Snack">Snack</option>
-            <option value="Sweet">Sweet</option>
-            <option value="Salty & Spicy">Salty & Spicy</option>
-        </select>
+                <option value="">Alle Kategorien</option>
+                <option value="Snack">Snack</option>
+                <option value="Sweet">Sweet</option>
+                <option value="Salty & Spicy">Salty & Spicy</option>
+            </select>
         </section>
 
-        <!-- Bereich für dynamisch geladene Produkte -->
+        <!-- Container für dynamisch geladene Produkte -->
         <div class="product-grid" id="productGrid"></div>
     </main>
 
-    <!-- ========== FUSSZEILE ========== -->
+    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -63,12 +68,12 @@
         </div>
     </footer>
 
-    <!-- ========== PRODUKTE PER AJAX LADEN ========== -->
+    <!-- ==================== JAVASCRIPT ZUM LADEN DER PRODUKTE ==================== -->
     <script>
         // Alle Produkte werden hier gespeichert
         let allProducts = [];
 
-        // Produkte vom Backend über die API abrufen
+        // Produkte vom Backend abrufen
         fetch("../../Backend/logic/requestHandler.php?action=getProducts")
             .then(response => response.json())
             .then(products => {
@@ -77,40 +82,40 @@
             })
             .catch(error => console.error("❌ Fehler beim Laden der Produkte:", error));
 
-        // Funktion zum Darstellen der Produkte im HTML
+        // Funktion zum Rendern der Produkte im HTML
         function renderProducts(products) {
             const grid = document.getElementById("productGrid");
-            grid.innerHTML = ""; // Alte Einträge löschen
+            grid.innerHTML = ""; // Vorherige Produkte löschen
 
             products.forEach(product => {
                 const card = document.createElement("div");
                 card.className = "product-card";
                 card.innerHTML = `
-                <a href="product_detail.html?id=${product.id}">
-                    <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p>€ ${parseFloat(product.price).toFixed(2)}</p>
-                </a>
-            `;
+                    <a href="product_detail.html?id=${product.id}">
+                        <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
+                        <h3>${product.name}</h3>
+                        <p>€ ${parseFloat(product.price).toFixed(2)}</p>
+                    </a>
+                `;
                 grid.appendChild(card);
             });
         }
 
-        // Filterfunktion nach Name und Kategorie
+        // Funktion zum Filtern der Produkte
         function applyFilters() {
             const searchTerm = document.getElementById("searchInput").value.toLowerCase();
             const selectedCategory = document.getElementById("categoryFilter").value;
 
-            const filtered = allProducts.filter(product => {
+            const filteredProducts = allProducts.filter(product => {
                 const matchesSearch = product.name.toLowerCase().includes(searchTerm);
                 const matchesCategory = selectedCategory === "" || product.category === selectedCategory;
                 return matchesSearch && matchesCategory;
             });
 
-            renderProducts(filtered);
+            renderProducts(filteredProducts);
         }
 
-        // Events für Filterfelder
+        // Event Listener für Filterfelder
         document.getElementById("searchInput").addEventListener("input", applyFilters);
         document.getElementById("categoryFilter").addEventListener("change", applyFilters);
     </script>

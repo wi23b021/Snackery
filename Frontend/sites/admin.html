@@ -1,3 +1,9 @@
+<!-- 
+    Snackery – Adminbereich (admin.html)
+    Startseite für Admins, um Produkte, Bestellungen und Benutzer zu verwalten.
+    Technologien: HTML5, CSS
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
@@ -5,16 +11,15 @@
     <meta charset="UTF-8">
     <title>Adminbereich – Snackery</title>
 
-    <!-- Zentrales CSS für das Design -->
+    <!-- Verknüpfung mit globalem Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ========== KOPFBEREICH ========== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <!-- Klick auf Logo führt zur Startseite -->
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
@@ -28,18 +33,17 @@
                 <li><a href="admin.html">Adminbereich</a></li>
                 <li><a href="profil.html">Mein Profil</a></li>
                 <li><a href="login.html">Logout</a></li>
-                <!-- Wird dynamisch ersetzt -->
             </ul>
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ==================== ADMIN DASHBOARD ==================== -->
     <main>
         <div class="profile-container">
             <h2>Willkommen im Adminbereich</h2>
-            <p>Hier kannst du deinen Shop verwalten:</p>
+            <p>Hier kannst du deinen Online-Shop verwalten:</p>
 
-            <!-- Buttons für Admin-Funktionen -->
+            <!-- Admin-Optionen -->
             <ul style="list-style: none; padding: 0; text-align: center;">
                 <li style="margin-bottom: 20px;">
                     <a class="btn" href="admin_products.html">Produkte verwalten</a>
@@ -54,7 +58,7 @@
         </div>
     </main>
 
-    <!-- ========== FUSSZEILE ========== -->
+    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -65,11 +69,7 @@
         </div>
     </footer>
 
-    <!-- ========== OPTIONAL: Dynamischer Login/Logout-Status per JS ========== -->
-    <script>
-        // Beispiel: Loginstatus dynamisch prüfen (für später, wenn du möchtest)
-        // Aktuell nur Platzhalter
-    </script>
+    <!-- Hinweis: Hier könnte später dynamisches User-Login-Handling ergänzt werden -->
 
 </body>
 

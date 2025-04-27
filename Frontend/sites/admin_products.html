@@ -1,3 +1,9 @@
+<!-- 
+    Snackery – Produkte verwalten (admin_products.html)
+    Diese Seite erlaubt Admins, Produkte zu verwalten (anzeigen, bearbeiten, löschen).
+    Technologien: HTML5, CSS, JavaScript (AJAX)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
@@ -5,20 +11,21 @@
     <meta charset="UTF-8">
     <title>Produkte verwalten – Snackery</title>
 
-    <!-- Globale CSS-Datei für das Styling -->
+    <!-- Einbinden des globalen Stylesheets -->
     <link rel="stylesheet" href="../res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ========== HEADER ========== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <!-- Klick auf das Logo führt zur Startseite -->
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
+        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
@@ -28,20 +35,20 @@
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ==================== PRODUKTLISTE ==================== -->
     <main class="profile-container">
         <h2>Produkte verwalten</h2>
 
         <!-- Button zum Hinzufügen eines neuen Produkts -->
         <a href="add_product.html" class="btn">+ Neues Produkt hinzufügen</a>
 
-        <!-- Bereich, in dem die Produktliste geladen wird -->
+        <!-- Bereich für die Produktliste -->
         <div id="productTableContainer" style="margin-top: 30px;">
             <p>🔄 Produkte werden geladen...</p>
         </div>
     </main>
 
-    <!-- ========== FUSSZEILE ========== -->
+    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -52,21 +59,20 @@
         </div>
     </footer>
 
-    <!-- ========== SCRIPT ZUM LADEN DER PRODUKTE ========== -->
+    <!-- ==================== JAVASCRIPT: PRODUKTE LADEN ==================== -->
     <script>
-        // Produkte vom Server abfragen
+        // Produkte vom Server laden
         fetch("../../Backend/logic/requestHandler.php?action=getProducts")
             .then(response => response.json())
             .then(products => {
                 const container = document.getElementById("productTableContainer");
 
-                // Wenn keine Produkte vorhanden sind
                 if (products.length === 0) {
                     container.innerHTML = "<p>❌ Keine Produkte gefunden.</p>";
                     return;
                 }
 
-                // Tabelle vorbereiten
+                // Tabelle erstellen
                 let tableHTML = `
                     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                         <thead>
@@ -78,10 +84,8 @@
                                 <th>Aktionen</th>
                             </tr>
                         </thead>
-                        <tbody>
-                `;
+                        <tbody>`;
 
-                // Für jedes Produkt eine Zeile erzeugen
                 products.forEach(product => {
                     tableHTML += `
                         <tr>
@@ -93,28 +97,26 @@
                                 <a class="btn" href="edit_product.html?id=${product.id}">Bearbeiten</a>
                                 <button class="btn deleteBtn" data-id="${product.id}">Löschen</button>
                             </td>
-                        </tr>
-                    `;
+                        </tr>`;
                 });
 
                 tableHTML += "</tbody></table>";
                 container.innerHTML = tableHTML;
 
-                // Alle Löschen-Buttons aktivieren
+                // Löschen-Buttons aktivieren
                 document.querySelectorAll(".deleteBtn").forEach(button => {
                     button.addEventListener("click", () => {
                         const productId = button.dataset.id;
                         const confirmDelete = confirm("Willst du dieses Produkt wirklich löschen?");
                         if (confirmDelete) {
-                            // Hier könnte man die Löschung per fetch() senden
-                            alert(`🗑️ Produkt mit ID ${productId} löschen (per Backend-Request senden)`);
+                            alert(`🗑️ Produkt mit ID ${productId} löschen (per Backend-Request).`);
+                            // Hier könnte später ein fetch() zum Löschen eingebaut werden
                         }
                     });
                 });
             })
             .catch(error => {
-                document.getElementById("productTableContainer").innerHTML =
-                    "<p>❌ Fehler beim Laden der Produkte.</p>";
+                document.getElementById("productTableContainer").innerHTML = "<p>❌ Fehler beim Laden der Produkte.</p>";
                 console.error(error);
             });
     </script>

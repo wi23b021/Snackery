@@ -1,43 +1,53 @@
+<!-- 
+    Snackery – Profilseite (profil.html)
+    Diese Seite ermöglicht es dem Benutzer, seine Profildaten einzusehen und zu bearbeiten.
+    Technologien: HTML5, CSS, JavaScript (AJAX-Fetch)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <title>Profil bearbeiten – Snackery</title>
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- JavaScript zum Laden und Speichern von Profildaten -->
     <script>
-        // Wird ausgeführt, sobald die Seite fertig geladen ist
+        // Nach dem Laden der Seite wird das Profil geladen
         document.addEventListener("DOMContentLoaded", () => {
-            // 🔄 Profil vom Server laden
+
+            // 🔄 Benutzerdaten vom Server abrufen
             fetch("../../Backend/logic/requestHandler.php?action=getProfile", {
-                    credentials: "include" // ➕ WICHTIG: Session-Cookie mitschicken!
+                    credentials: "include" // ➡️ Wichtig: Session-Cookie muss mitgesendet werden!
                 })
                 .then(res => res.json())
                 .then(user => {
-                    // ❌ Falls kein Benutzer geladen wird → Weiterleitung zur Login-Seite
+                    // Falls kein User geladen werden konnte → zurück zum Login
                     if (!user || !user.id) {
                         window.location.href = "login.html";
                         return;
                     }
 
-                    // ✅ Felder mit Benutzerdaten befüllen
+                    // Alle Input-Felder mit Benutzerdaten füllen
                     for (const field in user) {
                         const input = document.querySelector(`[name="${field}"]`);
                         if (input) input.value = user[field];
                     }
 
-                    // ➕ Adminlink sichtbar machen, falls Rolle "admin"
+                    // Admin-Link anzeigen, falls der User "admin" ist
                     if (user.role === "admin") {
                         document.getElementById("adminLink").style.display = "inline";
                     }
                 })
                 .catch(() => {
-                    // ❌ Fehler beim Laden → Weiterleitung zur Login-Seite
-                    alert("Fehler beim Laden des Profils.");
+                    alert("❌ Fehler beim Laden des Profils.");
                     window.location.href = "login.html";
                 });
 
-            // 📝 Formular absenden (Profil aktualisieren)
+            // 📝 Formular absenden, um Profil zu aktualisieren
             document.getElementById("profileForm").addEventListener("submit", (e) => {
                 e.preventDefault(); // Kein Neuladen der Seite
 
@@ -50,7 +60,7 @@
                     })
                     .then(res => res.json())
                     .then(data => {
-                        alert(data.success ? "✅ Profil aktualisiert!" : "❌ Fehler: " + data.message);
+                        alert(data.success ? "✅ Profil erfolgreich aktualisiert!" : "❌ Fehler: " + data.message);
                     })
                     .catch(() => alert("❌ Fehler beim Speichern."));
             });
@@ -60,7 +70,7 @@
 
 <body>
 
-    <!-- ========== KOPFBEREICH ========== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
             <a href="/Snackery/index.html">
@@ -72,6 +82,7 @@
                 <li><a href="/Snackery/index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
+                <!-- Adminlink wird bei Bedarf angezeigt -->
                 <li><a id="adminLink" href="admin.html" style="display: none;">Adminbereich</a></li>
                 <li><a href="profil.html">Mein Profil</a></li>
                 <li><a href="../../Backend/logout.php">Logout</a></li>
@@ -79,13 +90,13 @@
         </nav>
     </header>
 
-    <!-- ========== INHALT ========== -->
+    <!-- ==================== PROFILFORMULAR ==================== -->
     <main>
         <div class="profile-container">
             <h2>Profil bearbeiten</h2>
 
-            <!-- ✅ Profilformular -->
             <form id="profileForm">
+                <!-- Benutzerdaten -->
                 <input type="text" name="firstname" placeholder="Vorname" required>
                 <input type="text" name="lastname" placeholder="Nachname" required>
                 <input type="email" name="email" placeholder="E-Mail" required>
@@ -104,12 +115,13 @@
                 <input type="password" name="new_password" placeholder="Neues Passwort (optional)">
                 <input type="password" name="new_password_repeat" placeholder="Neues Passwort wiederholen">
 
+                <!-- Absenden -->
                 <button type="submit">Profil aktualisieren</button>
             </form>
         </div>
     </main>
 
-    <!-- ========== FUßBEREICH ========== -->
+    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>

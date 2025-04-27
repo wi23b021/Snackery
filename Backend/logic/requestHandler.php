@@ -1,63 +1,70 @@
 <?php
-// ==============================================
-// Request-Handler für das Frontend (AJAX-Zugriffe)
-// ==============================================
+//
+// Snackery – Zentrale Datei für alle AJAX-Anfragen vom Frontend
+// Hier werden z.B. Produkte geladen, Profile verwaltet, Bestellungen abgeschickt.
+//
 
-session_start(); // Session starten
+// === SESSION STARTEN ===
+// Damit wir auf eingeloggte Benutzer zugreifen können
+session_start();
 
-// Header für CORS & JSON-Ausgabe
-header("Access-Control-Allow-Origin: http://localhost");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: POST, GET");
-header("Access-Control-Allow-Headers: Content-Type");
+// === HEADER FÜR ANFRAGEN EINSTELLEN ===
+// Erlaubt Anfragen vom lokalen Frontend
+header("Access-Control-Allow-Origin: http://localhost"); // Ursprungsseite erlauben
+header("Access-Control-Allow-Credentials: true");         // Cookies erlauben (z.B. Session)
+header("Content-Type: application/json");                  // Antwortformat ist JSON
+header("Access-Control-Allow-Methods: POST, GET");         // Nur POST und GET Anfragen zulassen
+header("Access-Control-Allow-Headers: Content-Type");      // Erlaubt bestimmte Header bei Anfragen
 
-// DB-Zugriff laden
+// === HELFERDATEIEN EINBINDEN ===
+// Verbindung zur Datenbank und Hilfsfunktionen (z.B. Produkte abrufen)
 require_once __DIR__ . '/../config/dataHandler.php';
 require_once __DIR__ . '/../config/dbaccess.php';
 
-// DB-Verbindung
-$db = new DbAccess();
-$conn = $db->connect();
+// === VERBINDUNG ZUR DATENBANK HERSTELLEN ===
+$db = new DbAccess(); // Neues Objekt der Klasse DbAccess
+$conn = $db->connect(); // Verbindung aufbauen (PDO-Objekt)
 
-// Aktion auslesen
-$action = $_GET['action'] ?? '';
+// === AKTION AUSLESEN (getProducts, getProfile, placeOrder usw.) ===
+$action = $_GET['action'] ?? ''; // Falls keine Aktion angegeben ist, leerer String
 
-// ==========================
-// ALLE PRODUKTE LADEN
-// ==========================
+// ====================================
+// 1) ALLE PRODUKTE LADEN
+// ====================================
 if ($action === 'getProducts') {
-    $products = getAllProducts();
-    echo json_encode($products);
+    // Produkte holen über dataHandler.php
+    $products = getAllProducts(); 
+    echo json_encode($products); // Als JSON an das Frontend schicken
     exit;
 }
 
-// ==========================
-// EINZELNES PRODUKT LADEN
-// ==========================
+// ====================================
+// 2) EINZELNES PRODUKT LADEN
+// ====================================
 if ($action === 'getProduct') {
-    $productId = $_GET['id'] ?? null;
+    $productId = $_GET['id'] ?? null; // ID aus der URL holen
 
     if (!$productId) {
         echo json_encode(['success' => false, 'message' => 'Produkt-ID fehlt.']);
         exit;
     }
 
+    // Produkt aus der Datenbank abfragen
     $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
     $stmt->execute([$productId]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($product) {
-        echo json_encode($product);
+        echo json_encode($product); // Produkt zurückgeben
     } else {
         echo json_encode(['success' => false, 'message' => 'Produkt nicht gefunden.']);
     }
     exit;
 }
 
-// ==========================
-// PRODUKT AKTUALISIEREN
-// ==========================
+// ====================================
+// 3) PRODUKT AKTUALISIEREN
+// ====================================
 if ($action === 'updateProduct') {
     $productId = $_GET['id'] ?? null;
 
@@ -66,6 +73,7 @@ if ($action === 'updateProduct') {
         exit;
     }
 
+    // Neue Produktdaten auslesen (Body-Daten als JSON)
     $data = json_decode(file_get_contents("php://input"), true);
 
     if (!$data || !isset($data['name'], $data['price'], $data['category'])) {
@@ -73,6 +81,7 @@ if ($action === 'updateProduct') {
         exit;
     }
 
+    // Update-Query ausführen
     $stmt = $conn->prepare("UPDATE products SET name = ?, price = ?, category = ? WHERE id = ?");
     $stmt->execute([
         $data['name'],
@@ -85,15 +94,16 @@ if ($action === 'updateProduct') {
     exit;
 }
 
-// ==========================
-// NEUES PRODUKT HINZUFÜGEN
-// ==========================
+// ====================================
+// 4) NEUES PRODUKT HINZUFÜGEN
+// ====================================
 if ($action === 'addProduct') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
         exit;
     }
 
+    // Pflichtfelder prüfen
     $required = ['name', 'description', 'price', 'category', 'origin_country', 'stock'];
     foreach ($required as $field) {
         if (empty($_POST[$field])) {
@@ -102,11 +112,13 @@ if ($action === 'addProduct') {
         }
     }
 
+    // Bild-Upload prüfen
     if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
         echo json_encode(['success' => false, 'message' => 'Bild-Upload fehlgeschlagen.']);
         exit;
     }
 
+    // Bild speichern
     $imageName = basename($_FILES['image']['name']);
     $uploadDir = '../productpictures/';
     $uploadPath = $uploadDir . $imageName;
@@ -116,6 +128,7 @@ if ($action === 'addProduct') {
         exit;
     }
 
+    // Produkt speichern
     $stmt = $conn->prepare("INSERT INTO products (name, description, price, image, category, origin_country, stock, created_at)
                             VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
     $stmt->execute([
@@ -132,18 +145,20 @@ if ($action === 'addProduct') {
     exit;
 }
 
-// ==========================
-// PROFIL LADEN
-// ==========================
+// ====================================
+// 5) BENUTZER-PROFIL LADEN
+// ====================================
 if ($action === 'getProfile') {
+    // Nur wenn eingeloggt
     if (!isset($_SESSION['user'])) {
         http_response_code(401);
         echo json_encode(['error' => 'Nicht eingeloggt']);
         exit;
     }
 
-    $user = $_SESSION['user'];
+    $user = $_SESSION['user']; // Session-Daten
 
+    // Profildaten als JSON schicken
     echo json_encode([
         'id'           => $user['id'],
         'username'     => $user['username'],
@@ -162,9 +177,9 @@ if ($action === 'getProfile') {
     exit;
 }
 
-// ==========================
-// USER EXISTENZ PRÜFEN
-// ==========================
+// ====================================
+// 6) BENUTZER-EXISTENZ PRÜFEN (Register-Validierung)
+// ====================================
 if ($action === 'checkUserExists') {
     $username = $_GET['username'] ?? '';
     $email = $_GET['email'] ?? '';
@@ -180,17 +195,16 @@ if ($action === 'checkUserExists') {
     exit;
 }
 
-// ==========================
-// BENUTZER VERWALTEN (KORRIGIERT!)
-// ==========================
+// ====================================
+// 7) ALLE BENUTZER LADEN (Adminbereich)
+// ====================================
 if ($action === 'getUsers') {
     try {
         $stmt = $conn->prepare("SELECT id, username, email, firstname, lastname, role FROM users");
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // ⚠️ Kein success-Wrapper! Frontend erwartet direkt ein Array!
-        echo json_encode($users);
+        echo json_encode($users); // Kein success-Wrapper nötig
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Fehler beim Laden der Benutzer: ' . $e->getMessage()]);
@@ -198,9 +212,64 @@ if ($action === 'getUsers') {
     exit;
 }
 
-// ==========================
-// UNBEKANNTE AKTION
-// ==========================
+// ====================================
+// 8) NEU: BESTELLUNG ABSCHICKEN (Checkout)
+// ====================================
+if ($action === 'placeOrder') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
+        exit;
+    }
+
+    if (!isset($_SESSION['user'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Nicht eingeloggt.']);
+        exit;
+    }
+
+    // Adressdaten und Warenkorb auslesen
+    $street = $_POST['street'] ?? '';
+    $housenumber = $_POST['housenumber'] ?? '';
+    $postalcode = $_POST['postalcode'] ?? '';
+    $city = $_POST['city'] ?? '';
+    $paymentMethod = $_POST['payment_method'] ?? '';
+    $cartJson = $_POST['cart'] ?? '';
+
+    if (!$street || !$housenumber || !$postalcode || !$city || !$paymentMethod || !$cartJson) {
+        echo json_encode(['success' => false, 'message' => 'Fehlende Bestelldaten.']);
+        exit;
+    }
+
+    $cart = json_decode($cartJson, true);
+
+    if (!is_array($cart) || count($cart) === 0) {
+        echo json_encode(['success' => false, 'message' => 'Warenkorb ist leer oder ungültig.']);
+        exit;
+    }
+
+    $userId = $_SESSION['user']['id'];
+
+    try {
+        // Bestellung speichern
+        $stmt = $conn->prepare("INSERT INTO orders (user_id, street, housenumber, postalcode, city, payment_method, order_date, status)
+                                VALUES (?, ?, ?, ?, ?, ?, NOW(), 'offen')");
+        $stmt->execute([$userId, $street, $housenumber, $postalcode, $city, $paymentMethod]);
+
+        $orderId = $conn->lastInsertId(); // ID der neuen Bestellung
+
+        echo json_encode(['success' => true, 'message' => 'Bestellung gespeichert.', 'orderId' => $orderId]);
+        exit;
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+// ====================================
+// 9) UNBEKANNTE AKTION
+// ====================================
 http_response_code(400);
 echo json_encode(["error" => "Ungültige Anfrage – keine passende Aktion gefunden."]);
 exit;
+?>

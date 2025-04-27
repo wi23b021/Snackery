@@ -1,3 +1,9 @@
+<!-- 
+    Snackery – Hauptseite (index.php)
+    Diese Seite zeigt eine Übersicht mit Logo, Navigation und Einladungstext.
+    Technologien: HTML5, CSS, JavaScript (reines Frontend, kein PHP außer Dateiendung!)
+-->
+
 <!DOCTYPE html>
 <html lang="de">
 
@@ -5,63 +11,59 @@
     <meta charset="UTF-8">
     <title>Snackery – Internationale Snacks</title>
 
-    <!-- Verknüpfung mit dem zentralen Stylesheet -->
+    <!-- Einbinden des zentralen Stylesheets -->
     <link rel="stylesheet" href="Frontend/res/css/style.css">
 </head>
 
 <body>
 
-    <!-- ========== KOPFZEILE MIT LOGO UND NAVIGATION ========== -->
+    <!-- ==================== HEADER-BEREICH ==================== -->
     <header>
         <div class="logo">
-            <!-- Klick auf das Logo führt zur Startseite -->
+            <!-- Klickbares Logo, führt zur Startseite -->
             <a href="index.html">
                 <img src="Frontend/res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigation mit Links zu den Unterseiten -->
+        <!-- Navigationsmenü -->
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
                 <li><a href="Frontend/sites/products.html">Produkte</a></li>
                 <li><a href="Frontend/sites/cart.html">Warenkorb</a></li>
-
-                <!-- Bei dieser statischen HTML-Version simulieren wir nur die Links.
-                 Dynamische Login-Navigation (wie mit PHP) entfällt hier. -->
                 <li><a href="Frontend/sites/login.html">Login</a></li>
                 <li><a href="Frontend/sites/register.html">Registrieren</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ========== HERO-BEREICH MIT EINLADUNGSTEXT ========== -->
+    <!-- ==================== HERO-SEKTION (Einladung) ==================== -->
     <section class="hero">
         <h1>Willkommen bei Snackery</h1>
         <p>Entdecke internationale Snacks aus aller Welt – direkt zu dir nach Hause geliefert!</p>
 
-        <!-- Button führt zu den Produkten -->
+        <!-- Button führt zur Produktübersicht -->
         <a href="Frontend/sites/products.html" class="btn">Jetzt entdecken</a>
     </section>
 
-    <!-- ========== FEATURES – VORTEILE VON SNACKERY ========== -->
+    <!-- ==================== FEATURES-BEREICH ==================== -->
     <section class="features-section">
-
-        <!-- Feature 1 – Weltweiter Versand -->
+        <!-- Feature 1: Weltweit verfügbar -->
         <div class="feature-box">
             <img src="Frontend/res/icons/global.png" alt="Weltweiter Versand">
             <h3>Weltweit verfügbar</h3>
             <p>Internationale Süßigkeiten und Snacks – aus Japan, USA, Türkei und mehr.</p>
         </div>
 
-        <!-- Feature 2 – Schneller Versand -->
+        <!-- Feature 2: Schneller Versand -->
         <div class="feature-box">
             <img src="Frontend/res/icons/fast.png" alt="Schneller Versand">
             <h3>Schneller Versand</h3>
             <p>Blitzschneller und sicherer Versand – in wenigen Tagen bei dir zuhause.</p>
         </div>
 
-        <!-- Feature 3 – Mit Liebe verpackt -->
+        <!-- Feature 3: Mit Liebe verpackt -->
         <div class="feature-box">
             <img src="Frontend/res/icons/heart.png" alt="Mit Liebe ausgewählt">
             <h3>Mit Liebe verpackt</h3>
@@ -69,13 +71,13 @@
         </div>
     </section>
 
-    <!-- ========== FUßBEREICH MIT LINKS ========== -->
+    <!-- ==================== FOOTER (Fußzeile) ==================== -->
     <footer>
         <div class="footer-content">
-            <!-- Copyright-Info -->
+            <!-- Copyright -->
             <p>&copy; 2025 Snackery</p>
 
-            <!-- Links zu Impressum und Hilfe -->
+            <!-- Footer-Links -->
             <div class="footer-links">
                 <a href="Frontend/sites/impressum.html">Impressum</a>
                 <a href="Frontend/sites/hilfe.html">Hilfe</a>
