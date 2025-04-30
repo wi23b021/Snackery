@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrierung – Snackery</title>
+
+    <link rel="stylesheet" href="../res/css/style.css">
+    <script defer src="../js/register-validation.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../../Backend/logic/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        window.location.href = "profil.html";
+                    }
+                });
+
+            // Fehleranalyse per URL
+            const params = new URLSearchParams(window.location.search);
+            const errorBox = document.getElementById("errorBox");
+            const error = params.get("error");
+
+            if (error === "passwort") {
+                errorBox.textContent = "❌ Die Passwörter stimmen nicht überein.";
+            } else if (error === "existiert") {
+                errorBox.textContent = "❌ Benutzername oder E-Mail ist bereits vergeben.";
+            } else if (error === "datenbank") {
+                errorBox.textContent = "❌ Ein Fehler bei der Registrierung ist aufgetreten.";
+            }
+        });
+    </script>
+</head>
+
+<body>
+
+    <!-- ========== HEADER ========== -->
+    <header>
+        <div class="logo">
+            <a href="../../index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="../../index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Registrieren</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== REGISTRIERUNG ========== -->
+    <main>
+        <div class="register-container">
+            <h2>Registrieren</h2>
+
+            <div id="errorBox" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+
+            <form action="../../Backend/register.php" method="POST" id="registerForm">
+                <input type="text" name="firstname" placeholder="Vorname" required>
+                <input type="text" name="lastname" placeholder="Nachname" required>
+                <input type="text" name="username" placeholder="Benutzername" required>
+                <input type="email" name="email" placeholder="E-Mail-Adresse" required>
+
+                <input type="text" name="street" placeholder="Straße" required>
+                <input type="text" name="housenumber" placeholder="Hausnummer" required>
+                <input type="text" name="postalcode" placeholder="PLZ" required>
+                <input type="text" name="city" placeholder="Ort" required>
+
+                <input type="password" name="password" placeholder="Passwort" required>
+                <input type="password" name="password_repeat" placeholder="Passwort wiederholen" required>
+
+                <button type="submit">Registrieren</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

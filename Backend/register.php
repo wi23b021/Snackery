@@ -1,82 +1,61 @@
 <?php
-//  Verbindung zur Datenbank aufbauen (dbaccess.php enthält die Klasse DbAccess)
-require_once __DIR__ . '/config/dbaccess.php'; // Absolute Pfadangabe macht unabhängig von Ausführungsort
+// Snackery – Benutzerregistrierung (register.php)
+// Dieses PHP-Skript verarbeitet Registrierungen und speichert neue Benutzer in der Datenbank.
 
-// 🧾 Formularwerte per POST abholen (müssen mit den "name"-Attributen im HTML übereinstimmen!)
-$firstname    = $_POST['firstname'];       // Vorname
-$lastname     = $_POST['lastname'];        // Nachname
-$username     = $_POST['username'];        // Benutzername
-$email        = $_POST['email'];           // E-Mail-Adresse
-$street       = $_POST['street'];          // Straße
-$housenumber  = $_POST['housenumber'];     // Hausnummer
-$postalcode   = $_POST['postalcode'];      // PLZ
-$city         = $_POST['city'];            // Ort
-$password     = $_POST['password'];        // Passwort
-$password2    = $_POST['password_repeat']; // Passwort-Wiederholung
+require_once __DIR__ . '/config/dbaccess.php';
 
-//  Prüfen, ob beide Passwörter übereinstimmen
+session_start(); // Session starten
+
+// POST-Daten aus Formular abholen
+$firstname    = $_POST['firstname'] ?? '';
+$lastname     = $_POST['lastname'] ?? '';
+$username     = $_POST['username'] ?? '';
+$email        = $_POST['email'] ?? '';
+$street       = $_POST['street'] ?? '';
+$housenumber  = $_POST['housenumber'] ?? '';
+$postalcode   = $_POST['postalcode'] ?? '';
+$city         = $_POST['city'] ?? '';
+$password     = $_POST['password'] ?? '';
+$password2    = $_POST['password_repeat'] ?? '';
+
+// Passwortvergleich
 if ($password !== $password2) {
-    // ❌ Fehlermeldung, wenn die Passwörter nicht identisch sind
-    die("❌ Die Passwörter stimmen nicht überein.");
+    header("Location: ../Frontend/sites/register.html?error=passwort");
+    exit;
 }
 
-//  Passwort sicher verschlüsseln mit BCRYPT (empfohlene Methode)
+// Passwort verschlüsseln
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-//  Neue Datenbankverbindung aufbauen
+// Verbindung zur Datenbank
 $db = new DbAccess();
 $conn = $db->connect();
 
-//  SQL-Anweisung zum Einfügen eines neuen Users (Prepared Statement verhindert SQL-Injection)
-$sql = "INSERT INTO users (firstname, lastname, username, email, street, housenumber, postalcode, city, password, role)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+// Prüfen ob Benutzername oder E-Mail schon existiert
+$stmt = $conn->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+$stmt->execute([$username, $email]);
+if ($stmt->fetch()) {
+    header("Location: ../Frontend/sites/register.html?error=existiert");
+    exit;
+}
 
-//  Statement vorbereiten
-$stmt = $conn->prepare($sql);
+// Benutzer in die Datenbank einfügen
+$stmt = $conn->prepare("INSERT INTO users (firstname, lastname, username, email, street, housenumber, postalcode, city, password, role) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-//  Standardrolle für neue Benutzer: 'user'
-$role = "user";
+$role = "user"; // Standardrolle
 
-// ✅ Ausführung des SQL-Statements mit den übergebenen Werten
-if ($stmt->execute([
-    $firstname,
-    $lastname,
-    $username,
-    $email,
-    $street,
-    $housenumber,
-    $postalcode,
-    $city,
-    $hashedPassword,
-    $role
-])) {
-    //  Erfolgreiche Registrierung – Weiterleitung zu index.php im Hauptverzeichnis
-    echo "
-    <!DOCTYPE html>
-    <html lang='de'>
-    <head>
-        <meta charset='UTF-8'>
-        <meta http-equiv='refresh' content='3;url=../index.php'>
-        <title>Registrierung erfolgreich</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #fffaf4;
-                padding: 100px;
-                text-align: center;
-            }
-            .message {
-                font-size: 1.5em;
-                color: green;
-            }
-        </style>
-    </head>
-    <body>
-        <p class='message'>✅ Du hast dich erfolgreich registriert!<br>Du wirst in wenigen Sekunden zur Startseite weitergeleitet...</p>
-    </body>
-    </html>";
+$success = $stmt->execute([
+    $firstname, $lastname, $username, $email,
+    $street, $housenumber, $postalcode, $city,
+    $hashedPassword, $role
+]);
+
+if ($success) {
+    header("Location: ../Frontend/sites/login.html?registered=true");
+    exit;
 } else {
-    // ❌ Fehler beim Registrieren (z. B. doppelter Username oder leeres Feld)
-    echo "❌ Fehler bei der Registrierung.";
+    header("Location: ../Frontend/sites/register.html?error=datenbank");
+    exit;
 }
 ?>

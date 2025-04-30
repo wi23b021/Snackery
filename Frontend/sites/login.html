@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Login – Snackery</title>
+    <link rel="stylesheet" href="../res/css/style.css" />
+    <script defer src="../res/js/session-check.js"></script>
+
+    <!-- JavaScript für das Login-Handling -->
+    <script defer>
+        document.addEventListener("DOMContentLoaded", function() {
+            const params = new URLSearchParams(window.location.search);
+            const messageBox = document.getElementById("loginMessage");
+
+            if (params.get("registered") === "true") {
+                messageBox.textContent = "✅ Du hast dich erfolgreich registriert. Bitte melde dich jetzt an.";
+                messageBox.style.color = "green";
+            }
+
+            const loginForm = document.getElementById("loginForm");
+            loginForm.addEventListener("submit", async function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(loginForm);
+                const data = new URLSearchParams(formData);
+
+                const response = await fetch("../../Backend/login.php", {
+                    method: "POST",
+                    body: data,
+                    credentials: "include"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.role === "admin") {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "profil.html?login=success";
+                    }
+                } else {
+                    messageBox.textContent = result.message || "❌ Login fehlgeschlagen.";
+                    messageBox.style.color = "red";
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+    <!-- ==================== HEADER ==================== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo" />
+            </a>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="register.html">Registrieren</a></li>
+                <li><a href="profil.html" id="profileLink" style="display: none;">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php" id="logoutLink" style="display: none;">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ==================== LOGINFORMULAR ==================== -->
+    <main>
+        <div class="register-container">
+            <h2>Login</h2>
+
+            <form id="loginForm">
+                <input type="text" name="username" placeholder="E-Mail oder Benutzername" required />
+                <input type="password" name="password" placeholder="Passwort" required />
+                <button type="submit">Einloggen</button>
+            </form>
+
+            <p id="loginMessage" class="message-box"></p>
+        </div>
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Benutzerverwaltung</title>
+    <link rel="stylesheet" href="../res/css/style.css">
+
+    <script defer>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../../Backend/logic/requestHandler.php?action=getProfile", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(user => {
+                    if (!user || user.role !== "admin") {
+                        window.location.href = "login.html";
+                    }
+                })
+                .catch(() => {
+                    window.location.href = "login.html";
+                });
+        });
+    </script>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="admin.html">Adminbereich</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- INHALT -->
+    <main class="admin-container">
+        <h2>Benutzer verwalten</h2>
+        <div id="userTableContainer">
+            <p>🔄 Lade Benutzerliste...</p>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../../Backend/logic/requestHandler.php?action=getUsers", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(users => {
+                    const container = document.getElementById("userTableContainer");
+
+                    if (!Array.isArray(users) || users.length === 0) {
+                        container.innerHTML = "<p>❌ Keine Benutzer gefunden.</p>";
+                        return;
+                    }
+
+                    let tableHTML = `
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Benutzername</th>
+                                <th>E-Mail</th>
+                                <th>Vorname</th>
+                                <th>Nachname</th>
+                                <th>Rolle</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                    users.forEach(user => {
+                        tableHTML += `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.firstname}</td>
+                            <td>${user.lastname}</td>
+                            <td>
+                                <select data-user-id="${user.id}" class="roleSelect">
+                                    <option value="user" ${user.role === "user" ? "selected" : ""}>User</option>
+                                    <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="deleteUserBtn" data-user-id="${user.id}">🗑️ Löschen</button>
+                            </td>
+                        </tr>`;
+                    });
+
+                    tableHTML += "</tbody></table>";
+                    container.innerHTML = tableHTML;
+
+                    // Rolle ändern (API muss noch gebaut werden)
+                    document.querySelectorAll(".roleSelect").forEach(select => {
+                        select.addEventListener("change", function() {
+                            const userId = this.dataset.userId;
+                            const newRole = this.value;
+                            alert(`🔄 Rolle für Benutzer ${userId} auf "${newRole}" ändern (API noch nicht implementiert).`);
+                        });
+                    });
+
+                    // Benutzer löschen (API muss noch gebaut werden)
+                    document.querySelectorAll(".deleteUserBtn").forEach(btn => {
+                        btn.addEventListener("click", function() {
+                            const userId = this.dataset.userId;
+                            if (confirm("❗ Benutzer wirklich löschen?")) {
+                                alert(`🗑️ Benutzer ${userId} löschen (API noch nicht implementiert).`);
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    document.getElementById("userTableContainer").innerHTML = "<p>❌ Fehler beim Laden der Benutzerliste.</p>";
+                    console.error(error);
+                });
+        });
+    </script>
+
+</body>
+
+</html>

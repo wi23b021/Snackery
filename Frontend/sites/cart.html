@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Warenkorb – Snackery</title>
+
+    <!-- Zentrale CSS-Datei -->
+    <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- Session-Überprüfung -->
+    <script src="../res/js/session-check.js"></script>
+</head>
+
+<body>
+
+    <!-- ========== KOPFBEREICH ========== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ========== HAUPTBEREICH ========== -->
+    <main style="text-align: center; padding: 50px;">
+        <h1>🛒 Dein Warenkorb</h1>
+        <div id="cartItems"></div>
+
+        <h3 id="totalPrice">Gesamt: € 0.00</h3>
+
+        <a href="checkout.html" class="btn">Zur Kasse</a>
+        <button id="clearCartBtn">Warenkorb leeren</button>
+    </main>
+
+    <!-- ========== FUßBEREICH ========== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== JAVASCRIPT FÜR DEN WARENKORB ========== -->
+    <script>
+        function loadCart() {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const cartItemsContainer = document.getElementById("cartItems");
+            const totalPriceElement = document.getElementById("totalPrice");
+
+            cartItemsContainer.innerHTML = "";
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
+                totalPriceElement.textContent = "Gesamt: € 0.00";
+                return;
+            }
+
+            let total = 0;
+
+            cart.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "cart-item";
+
+                const safeName = document.createTextNode(item.name).textContent;
+
+                div.innerHTML = `
+                    <p><strong>${safeName}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
+                    <button onclick="removeFromCart(${item.id})">🗑️ Entfernen</button>
+                `;
+                cartItemsContainer.appendChild(div);
+
+                total += item.price * item.quantity;
+            });
+
+            totalPriceElement.textContent = `Gesamt: € ${total.toFixed(2)}`;
+        }
+
+        function removeFromCart(productId) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+            cart = cart.filter(item => item.id !== productId);
+
+            localStorage.setItem("cart", JSON.stringify(cart));
+            loadCart();
+        }
+
+        document.getElementById("clearCartBtn").addEventListener("click", () => {
+            if (confirm("🧹 Möchtest du wirklich den ganzen Warenkorb leeren?")) {
+                localStorage.removeItem("cart");
+                loadCart();
+                alert("✅ Warenkorb wurde geleert!");
+            }
+        });
+
+        window.addEventListener("DOMContentLoaded", loadCart);
+    </script>
+
+</body>
+
+</html>

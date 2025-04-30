@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bestellung bearbeiten – Snackery</title>
+    <link rel="stylesheet" href="../res/css/style.css">
+    <script src="../res/js/session-check.js" defer></script>
+</head>
+
+<body>
+
+    <!-- ==================== HEADER ==================== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav>
+            <ul>
+                <li><a href="admin.html">Adminbereich</a></li>
+                <li><a href="admin_orders.html">Zurück zu Bestellungen</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ==================== BESTELLUNG BEARBEITEN ==================== -->
+    <main class="register-container">
+        <h2>Bestellung bearbeiten</h2>
+
+        <!-- Formular zur Bearbeitung -->
+        <form id="editOrderForm">
+            <label for="orderId">Bestell-ID:</label>
+            <input type="number" id="orderId" name="order_id" required>
+
+            <label for="status">Neuer Status:</label>
+            <select id="status" name="status" required>
+                <option value="offen">offen</option>
+                <option value="in Bearbeitung">in Bearbeitung</option>
+                <option value="versendet">versendet</option>
+                <option value="storniert">storniert</option>
+            </select>
+
+            <button type="submit">Änderung speichern</button>
+        </form>
+
+        <!-- Bereich für Erfolg oder Fehler -->
+        <p id="feedback" style="margin-top: 20px; font-weight: bold;"></p>
+    </main>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        document.getElementById("editOrderForm").addEventListener("submit", function(e) {
+            e.preventDefault(); // ❌ Seitenneuladen verhindern
+
+            const formData = new FormData(this);
+
+            fetch("../../Backend/logic/requestHandler.php?action=editOrder", {
+                    method: "POST",
+                    body: formData,
+                    credentials: "include" // ✅ Session-Cookie mitsenden
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const feedback = document.getElementById("feedback");
+                    feedback.textContent = data.message || "Änderung gespeichert.";
+                    feedback.style.color = data.success ? "green" : "red";
+                })
+                .catch(error => {
+                    console.error("❌ Fehler beim Senden:", error);
+                    const feedback = document.getElementById("feedback");
+                    feedback.textContent = "❌ Serverfehler beim Senden.";
+                    feedback.style.color = "red";
+                });
+        });
+    </script>
+
+</body>
+
+</html>

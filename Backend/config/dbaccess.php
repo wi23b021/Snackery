@@ -1,25 +1,30 @@
 <?php
-// Diese Klasse stellt eine Verbindung zur MySQL-Datenbank "snackery" her
-class DbAccess {
-    // Verbindungsparameter (lokale Entwicklungsumgebung)
-    private $host = "localhost";
-    private $dbname = "snackery";
-    private $username = "root";
-    private $password = "";
+// 
+// Snackery – Datenbankzugriffsklasse (dbaccess.php)
+// Diese Klasse stellt eine Verbindung zur MySQL-Datenbank her.
+// 
 
-    // Funktion zum Aufbau der PDO-Verbindung
+class DbAccess {
+    // Verbindungsdaten (lokale Entwicklungsumgebung)
+    private $host = "localhost";      // Server
+    private $dbname = "snackery";     // Datenbankname
+    private $username = "root";       // DB-Benutzername
+    private $password = "";           // DB-Passwort
+
+    // Funktion: Aufbau einer PDO-Verbindung
     public function connect() {
         try {
             $pdo = new PDO(
-                "mysql:host=$this->host;dbname=$this->dbname;charset=utf8",
+                "mysql:host=$this->host;dbname=$this->dbname;charset=utf8mb4",
                 $this->username,
                 $this->password
             );
-            // Fehlerausgabe bei SQL-Problemen aktivieren
+            // Fehler als Exception werfen, wenn etwas schiefgeht
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             return $pdo;
         } catch (PDOException $e) {
-            // Wenn Verbindung fehlschlägt, abbrechen und Fehler anzeigen
+            // ❌ Fehler beim Verbindungsaufbau
             die("❌ Verbindung fehlgeschlagen: " . $e->getMessage());
         }
     }

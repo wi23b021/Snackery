@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Adminbereich – Snackery</title>
+
+    <!-- Verknüpfung mit globalem Stylesheet -->
+    <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- JavaScript zur Sitzungsprüfung -->
+    <script defer>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../../Backend/logic/requestHandler.php?action=getProfile", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(user => {
+                    if (!user || user.role !== "admin") {
+                        window.location.href = "login.html";
+                    }
+                })
+                .catch(() => {
+                    window.location.href = "login.html";
+                });
+        });
+    </script>
+</head>
+
+<body>
+
+    <!-- ==================== HEADER ==================== -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="admin.html">Adminbereich</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ==================== ADMIN DASHBOARD ==================== -->
+    <main>
+        <div class="profile-container">
+            <h2>Willkommen im Adminbereich</h2>
+            <p>Hier kannst du deinen Online-Shop verwalten:</p>
+
+            <!-- Admin-Optionen -->
+            <ul style="list-style: none; padding: 0; text-align: center;">
+                <li style="margin-bottom: 20px;">
+                    <a class="btn" href="admin_products.html">Produkte verwalten</a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a class="btn" href="admin_orders.html">Bestellungen verwalten</a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a class="btn" href="admin_users.html">Benutzer verwalten</a>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

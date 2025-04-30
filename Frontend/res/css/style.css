@@ -1,339 +1,447 @@
-/* Allgemeine Schriftart und Seitenlayout */
+/* ==================== Grundlayout ==================== */
 
 body {
     font-family: 'Nunito', sans-serif;
-    /* moderne, gut lesbare Schriftart */
     margin: 0;
-    /* kein Standardrand */
     padding: 0;
-    /* kein Standardinnenabstand */
     background-color: #fffaf4;
-    /* heller Hintergrund passend zum Snack-Thema */
     color: #333;
-    /* dunkle Textfarbe für gute Lesbarkeit */
 }
 
 
-/* Kopfbereich (Header mit Logo und Navigation) */
+/* ==================== Header ==================== */
 
 header {
     display: flex;
-    /* horizontale Anordnung von Logo und Navigation */
     justify-content: center;
-    /* zentriert den Header-Inhalt */
     align-items: center;
-    /* vertikale Zentrierung */
     background-color: #ff6f61;
-    /* markantes Snackery-Rot */
     padding: 10px 20px;
-    /* Innenabstand oben/unten und seitlich */
 }
 
 .logo {
     display: flex;
-    /* Logo innerhalb flex-container */
     align-items: center;
-    /* vertikale Zentrierung des Logos */
     margin-right: 30px;
-    /* Abstand zur Navigation */
 }
 
 .logo img {
     height: 150px;
-    /* feste Höhe des Logos */
-    max-height: 160px;
-    /* maximale Höhe zur Sicherheit */
     margin: 20px 0;
-    /* vertikaler Abstand */
     transition: transform 0.3s ease;
-    /* sanfter Hover-Effekt */
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-    /* leichter Schatteneffekt */
 }
 
 .logo img:hover {
     transform: scale(1.05);
-    /* Logo leicht vergrößern beim Überfahren */
 }
-
-
-/* Navigation innerhalb des Headers */
 
 nav ul {
     list-style: none;
-    /* keine Aufzählungspunkte */
     display: flex;
-    /* horizontale Anordnung */
     gap: 20px;
-    /* Abstand zwischen den Listenelementen */
     margin: 0;
-    /* kein Außenabstand */
     padding: 0;
-    /* kein Innenabstand */
 }
 
 nav ul li a {
     text-decoration: none;
-    /* keine Unterstreichung */
     color: white;
-    /* weißer Text */
     font-weight: 600;
-    /* fettere Schrift */
     transition: color 0.3s ease;
-    /* Farbe bei Hover langsam ändern */
 }
 
 nav ul li a:hover {
     text-decoration: underline;
-    /* beim Überfahren unterstreichen */
     color: #f0f0f0;
-    /* helleres Weiß beim Hover */
 }
 
 
-/* Hero-Bereich auf der Startseite */
+/* ==================== Hero-Bereich ==================== */
 
 .hero {
     text-align: center;
-    /* zentrierter Text */
     padding: 80px 20px;
-    /* großzügiger Abstand */
     background: linear-gradient(to right, #ffe5ec, #fff1f1);
-    /* sanfter Farbverlauf */
 }
 
 .hero h1 {
     font-size: 2.5em;
-    /* große Überschrift */
     margin-bottom: 10px;
-    /* Abstand zum darauffolgenden Text */
 }
 
 .hero p {
     font-size: 1.2em;
-    /* etwas größerer Fließtext */
     margin-bottom: 30px;
-    /* Abstand zum Button */
 }
 
 
-/* Allgemeine Schaltflächen-Stile */
+/* ==================== Info-Boxen auf Startseite ==================== */
+
+.features-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    padding: 60px 20px;
+    background-color: #ffffff;
+}
+
+.feature-box {
+    background-color: #fffaf4;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    width: 280px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+}
+
+.feature-box img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    object-fit: contain;
+}
+
+.feature-box h3 {
+    font-size: 1.3em;
+    color: #ff6f61;
+    margin-bottom: 10px;
+}
+
+.feature-box p {
+    font-size: 0.95em;
+    color: #666;
+}
+
+
+/* ==================== Buttons ==================== */
 
 .btn,
 button {
     display: inline-block;
-    /* nebeneinander darstellbar */
     background-color: #ff6f61;
-    /* Snackery-Rot als Hintergrund */
     color: white;
-    /* weißer Text */
     padding: 12px 25px;
-    /* vertikale und horizontale Innenabstände */
     border-radius: 25px;
-    /* abgerundete Ecken */
     text-decoration: none;
-    /* kein Unterstreichen */
     font-weight: bold;
-    /* fette Schrift */
     transition: background-color 0.3s ease;
-    /* sanfte Änderung der Hintergrundfarbe */
     border: none;
-    /* keine Umrandung */
     cursor: pointer;
-    /* Mauszeiger zeigt Hand an */
 }
 
 .btn:hover,
 button:hover {
     background-color: #e85b50;
-    /* dunkleres Rot beim Überfahren */
 }
 
 
-/* Fußbereich der Seite */
-
-footer {
-    text-align: center;
-    /* zentrierter Text */
-    padding: 20px;
-    /* Innenabstand */
-    background-color: #f5f5f5;
-    /* hellgrauer Hintergrund */
-    font-size: 0.9em;
-    /* etwas kleinere Schrift */
-    margin-top: 50px;
-    /* Abstand nach oben */
-}
-
-.footer-content {
-    display: flex;
-    /* Flex-Layout für Impressum und Hilfe */
-    flex-direction: column;
-    /* untereinander statt nebeneinander */
-    align-items: center;
-    /* zentriert ausgerichtet */
-}
-
-.footer-links {
-    margin-top: 10px;
-    /* Abstand zu anderem Footer-Inhalt */
-}
-
-.footer-links a:link,
-.footer-links a:visited {
-    color: white;
-    /* weiße Links, wie andere Buttons */
-    text-decoration: none;
-    /* keine Unterstreichung */
-    margin: 0 10px;
-    /* Abstand zwischen den Links */
-    font-weight: bold;
-    /* fette Schrift */
-    transition: color 0.3s ease;
-    /* sanfte Farbänderung */
-}
-
-.footer-links a:hover {
-    color: #ff6f61;
-    /* Snackery-Rot beim Hover */
-    text-decoration: underline;
-    /* Unterstreichung beim Hover */
-}
-
-
-/* Formularcontainer für Registrierung und Profilbearbeitung */
+/* ==================== Formular-Container ==================== */
 
 .register-container,
-.profile-container {
-    max-width: 600px;
-    /* maximale Breite */
+.profile-container,
+.admin-container {
+    max-width: 1000px;
     margin: 60px auto;
-    /* zentriert mit Abstand nach oben/unten */
     padding: 40px;
-    /* Innenabstand */
     background-color: #ffffff;
-    /* weißer Hintergrund */
     box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
-    /* dezenter Schatten */
     border-radius: 15px;
-    /* abgerundete Ecken */
 }
 
 .register-container h1,
 .register-container h2,
 .profile-container h1,
-.profile-container h2 {
+.profile-container h2,
+.admin-container h2 {
     text-align: center;
-    /* Überschrift zentriert */
     margin-bottom: 25px;
-    /* Abstand nach unten */
     color: #ff6f61;
-    /* Snackery-Rot für Überschrift */
     font-size: 2em;
-    /* größere Schriftgröße */
 }
 
-.register-container input,
-.profile-container input {
+input,
+select {
     width: 100%;
-    /* Eingabe über gesamte Breite */
     padding: 14px 16px;
-    /* Innenabstand oben/unten und seitlich */
     margin: 10px 0;
-    /* Abstand zwischen Feldern */
     border: 1px solid #ccc;
-    /* graue Umrandung */
     border-radius: 10px;
-    /* abgerundete Kanten */
     font-size: 16px;
-    /* Standardschriftgröße */
     background-color: #fffaf4;
-    /* leicht getönter Hintergrund */
     transition: border-color 0.3s ease;
-    /* Umrandungsfarbe bei Fokus */
 }
 
-.register-container input:focus,
-.profile-container input:focus {
+input:focus,
+select:focus {
     outline: none;
-    /* keine zusätzliche Umrandung */
     border-color: #ff6f61;
-    /* rote Umrandung bei Fokus */
     box-shadow: 0 0 5px rgba(255, 111, 97, 0.3);
-    /* leichter Schein */
 }
 
 .register-container button,
-.profile-container button {
+.profile-container button,
+.admin-container button {
     width: 100%;
-    /* Button über gesamte Breite */
     padding: 14px;
-    /* Innenabstand */
     background-color: #ff6f61;
-    /* Hintergrundfarbe */
     border: none;
-    /* keine Umrandung */
     border-radius: 10px;
-    /* abgerundete Kanten */
     color: white;
-    /* weiße Schrift */
     font-size: 17px;
-    /* gut lesbare Schriftgröße */
     margin-top: 15px;
-    /* Abstand nach oben */
     transition: background-color 0.3s ease;
-    /* sanfte Farbänderung */
 }
 
 .register-container button:hover,
-.profile-container button:hover {
+.profile-container button:hover,
+.admin-container button:hover {
     background-color: #e85b50;
-    /* dunkleres Rot beim Hover */
 }
 
 
-/* Erfolgs- und Fehlermeldungen im Formularbereich */
+/* ==================== Nachrichten ==================== */
 
 .success-message {
     color: green;
-    /* grün für Erfolg */
     text-align: center;
-    /* zentrierter Text */
     font-weight: bold;
-    /* fette Schrift */
     margin-bottom: 20px;
-    /* Abstand nach unten */
 }
 
 .error-message {
     color: red;
-    /* rot für Fehler */
     text-align: center;
-    /* zentrierter Text */
     font-weight: bold;
-    /* fette Schrift */
     margin-bottom: 20px;
-    /* Abstand nach unten */
 }
 
 
-/* Footer-Links optisch wie normale weiße Buttons gestalten */
+/* ==================== Footer ==================== */
+
+footer {
+    text-align: center;
+    padding: 25px 0;
+    background-color: #f5f5f5;
+    font-size: 0.9em;
+    margin-top: 50px;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footer-content p {
+    margin: 5px 0;
+}
+
+.footer-links {
+    margin-top: 10px;
+}
 
 .footer-links a {
-    color: white;
-    background-color: #ff6f61;
-    padding: 10px 20px;
-    border-radius: 25px;
+    color: #333;
     text-decoration: none;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-    display: inline-block;
+    font-size: 0.9em;
+    margin: 0 10px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #ff6f61;
+    text-decoration: underline;
 }
 
 
-/* Hover-Effekt für Footer-Buttons */
+/* ==================== Tabelle für Admin ==================== */
 
-.footer-links a:hover {
-    background-color: #e85b50;
+.admin-container table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.admin-container th {
+    background-color: #ff6f61;
     color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+.admin-container td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-container tr:nth-child(even) {
+    background-color: #fdf4f1;
+}
+
+.admin-container a {
+    color: #ff6f61;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.admin-container a:hover {
+    text-decoration: underline;
+}
+
+
+/* ==================== Produktseite – Layout & Karten ==================== */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    padding: 40px;
+}
+
+.product-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover {
+    transform: scale(1.03);
+}
+
+.product-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+
+.product-card h3 {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.product-card p {
+    font-weight: bold;
+    color: #ff6f61;
+    margin: 0;
+}
+
+.product-card a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+
+/* ==================== Filterbereich ==================== */
+
+.filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 0 20px;
+}
+
+.filter-section input[type="text"],
+.filter-section select {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.filter-section input[type="text"]:focus,
+.filter-section select:focus {
+    outline: none;
+    border-color: #ff6f61;
+    box-shadow: 0 0 8px rgba(255, 111, 97, 0.3);
+}
+
+
+/* ==================== Zentrierte H2-Überschrift ==================== */
+
+main h2 {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 2em;
+    color: #ff6f61;
+}
+
+
+/* ==================== Produktdetailseite ==================== */
+
+.product-detail {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 40px;
+    background-color: #fffaf4;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.product-detail img {
+    max-width: 300px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+    background-color: white;
+    padding: 20px;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-info h2 {
+    color: #ff6f61;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.product-info p {
+    margin: 5px 0;
+}
+
+.price {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ff6f61;
+    margin: 15px 0;
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 40px;
+    text-decoration: none;
+    color: #ff6f61;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    text-decoration: underline;
 }

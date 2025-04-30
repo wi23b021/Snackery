@@ -3,52 +3,106 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Impressum – Snackery</title>
+    <title>Impressum & AGB – Snackery</title>
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- Sessionprüfung für Anzeige von Login/Profile -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../../Backend/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const loginLink = document.getElementById("loginLink");
+                    const registerLink = document.getElementById("registerLink");
+                    const profileLink = document.getElementById("profileLink");
+                    const logoutLink = document.getElementById("logoutLink");
+
+                    if (data.loggedIn) {
+                        loginLink.style.display = "none";
+                        registerLink.style.display = "none";
+                        profileLink.style.display = "inline";
+                        logoutLink.style.display = "inline";
+                    } else {
+                        loginLink.style.display = "inline";
+                        registerLink.style.display = "inline";
+                        profileLink.style.display = "none";
+                        logoutLink.style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    console.error("Fehler bei der Session-Überprüfung:", error);
+                });
+        });
+    </script>
 </head>
 
 <body>
+
+    <!-- ========== KOPFBEREICH MIT NAVIGATION ========== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.php">
+            <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
         <nav>
             <ul>
-                <li><a href="/Snackery/index.php">Startseite</a></li>
-                <li><a href="#">Produkte</a></li>
-                <li><a href="cart.php">Warenkorb</a></li>
-                <li><a href="login.php">Login</a></li>
-                <li><a href="register.php">Registrieren</a></li>
-
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="profil.html" id="profileLink" style="display: none;">Mein Profil</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="register.html" id="registerLink">Registrieren</a></li>
+                <li><a href="../../Backend/logout.php" id="logoutLink" style="display: none;">Logout</a></li>
             </ul>
         </nav>
     </header>
 
+    <!-- ========== INHALTSBEREICH ========== -->
     <main class="register-container">
         <h1>Impressum</h1>
+
         <p><strong>Snackery e.U.</strong></p>
         <p>Mustergasse 12/4<br>1020 Wien<br>Österreich</p>
 
-        <p><strong>Vertreten durch:</strong> Serdar Toluay, Ersan Kavak und Abdullah Kilicoglu </p>
+        <p><strong>Vertreten durch:</strong> Serdar Toluay, Ersan Kavak und Abdullah Kilicoglu</p>
+
         <p><strong>Kontakt:</strong><br> Telefon: +43 660 123 4567<br> E-Mail: office@snackery.at</p>
 
         <p><strong>Firmenbuchnummer:</strong> FN 123456a<br>
             <strong>Firmenbuchgericht:</strong> Handelsgericht Wien</p>
 
-        <p><strong>Umsatzsteuer-Identifikationsnummer:</strong> ATU12345678</p>
+        <p><strong>Umsatzsteuer-ID:</strong> ATU12345678</p>
 
         <p><strong>Mitglied bei:</strong> Wirtschaftskammer Wien</p>
-        <p><strong>Berufsrechtliche Vorschriften:</strong> Gewerbeordnung (abrufbar unter www.ris.bka.gv.at)</p>
+
+        <p><strong>Berufsrechtliche Vorschriften:</strong> Gewerbeordnung<br> (einsehbar unter www.ris.bka.gv.at)</p>
+
+        <hr>
+
+        <h2>Allgemeine Geschäftsbedingungen (AGB)</h2>
+        <p>Mit Nutzung dieser Website und unseres Online-Shops erklärst du dich mit folgenden AGB einverstanden:</p>
+        <ul>
+            <li>Alle Preise verstehen sich inkl. gesetzlicher Umsatzsteuer (USt.).</li>
+            <li>Der Versand erfolgt erst nach vollständigem Zahlungseingang.</li>
+            <li>Ein Rücktritt ist binnen 14 Tagen möglich (nur bei ungeöffneten Produkten).</li>
+            <li>Die Rücksendekosten trägt der Kunde.</li>
+            <li>Produktbilder sind Symbolfotos. Es kann zu leichten Abweichungen kommen.</li>
+            <li>Wir übernehmen keine Haftung für technische Fehler im Webshop.</li>
+        </ul>
+        <p>Stand: April 2025</p>
     </main>
 
+    <!-- ========== FUSSZEILE ========== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
             <div class="footer-links">
-                <a href="/Snackery/Frontend/sites/impressum.html">Impressum</a>
-                <a href="/Snackery/Frontend/sites/hilfe.html">Hilfe</a>
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
             </div>
         </div>
     </footer>

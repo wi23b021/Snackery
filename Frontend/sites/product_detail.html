@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Produktdetails – Snackery</title>
+    <link rel="stylesheet" href="../res/css/style.css">
+    <script src="../res/js/session-check.js" defer></script>
+</head>
+
+<body>
+
+    <!-- ============ HEADER ============ -->
+    <header>
+        <div class="logo">
+            <a href="/Snackery/index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>s
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ============ PRODUKTDETAILBEREICH ============ -->
+    <main>
+        <div class="product-detail" id="productContainer">
+            <!-- Produktdaten werden hier dynamisch geladen -->
+        </div>
+
+        <a href="products.html" class="back-link">← Zurück zur Übersicht</a>
+    </main>
+
+    <!-- ============ FUSSZEILE ============ -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============ JAVASCRIPT ============ -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get("id");
+
+            if (!productId) {
+                document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
+                return;
+            }
+
+            fetch(`../../Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(product => {
+                    if (!product || !product.id) {
+                        document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
+                        return;
+                    }
+
+                    document.getElementById("productContainer").innerHTML = `
+                        <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
+                        <div class="product-info">
+                            <h2>${product.name}</h2>
+                            <p>${product.description}</p>
+                            <p class="price">€ ${parseFloat(product.price).toFixed(2)}</p>
+                            <p><strong>Kategorie:</strong> ${product.category}</p>
+                            <p><strong>Herkunftsland:</strong> ${product.origin_country}</p>
+                            <p><strong>Verfügbar:</strong> ${product.stock} Stück</p>
+                            <button id="addToCartBtn">🛒 In den Warenkorb</button>
+                        </div>
+                    `;
+
+                    document.getElementById("addToCartBtn").addEventListener("click", () => {
+                        addToCart(product);
+                    });
+                })
+                .catch(error => {
+                    console.error("❌ Fehler beim Laden des Produkts:", error);
+                    document.getElementById("productContainer").innerHTML = "<h2>⚠️ Fehler beim Laden des Produkts.</h2>";
+                });
+        });
+
+        function addToCart(product) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+            const existing = cart.find(item => item.id == product.id);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: parseFloat(product.price),
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem("cart", JSON.stringify(cart));
+            alert("✅ Produkt wurde zum Warenkorb hinzugefügt!");
+        }
+    </script>
+
+</body>
+
+</html>
