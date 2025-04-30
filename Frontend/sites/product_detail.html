@@ -1,22 +1,16 @@
-<!-- 
-    Snackery – Produktdetailseite mit Warenkorb-Button
-    Technologien: HTML5, CSS, JavaScript (AJAX, LocalStorage)
--->
-
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <title>Produktdetails – Snackery</title>
-
-    <!-- Stylesheet für das Design -->
     <link rel="stylesheet" href="../res/css/style.css">
+    <script src="../res/js/session-check.js" defer></script>
 </head>
 
 <body>
 
-    <!-- ============ KOPFBEREICH ============ -->
+    <!-- ============ HEADER ============ -->
     <header>
         <div class="logo">
             <a href="/Snackery/index.html">
@@ -27,7 +21,7 @@
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
-                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>s
                 <li><a href="profil.html">Mein Profil</a></li>
                 <li><a href="../../Backend/logout.php">Logout</a></li>
             </ul>
@@ -37,10 +31,9 @@
     <!-- ============ PRODUKTDETAILBEREICH ============ -->
     <main>
         <div class="product-detail" id="productContainer">
-            <!-- Produktdaten werden per JS geladen -->
+            <!-- Produktdaten werden hier dynamisch geladen -->
         </div>
 
-        <!-- Button zurück zur Produktübersicht -->
         <a href="products.html" class="back-link">← Zurück zur Übersicht</a>
     </main>
 
@@ -57,29 +50,25 @@
 
     <!-- ============ JAVASCRIPT ============ -->
     <script>
-        // Sobald die Seite geladen ist
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get("id");
 
-            // Wenn keine Produkt-ID vorhanden → Fehlermeldung
             if (!productId) {
                 document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
                 return;
             }
 
-            // Produktdaten vom Server abrufen
-            fetch(`../../Backend/logic/requestHandler.php?action=getProducts`)
+            fetch(`../../Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
+                    credentials: "include"
+                })
                 .then(response => response.json())
-                .then(products => {
-                    const product = products.find(p => p.id == productId);
-
-                    if (!product) {
+                .then(product => {
+                    if (!product || !product.id) {
                         document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
                         return;
                     }
 
-                    // HTML erzeugen inklusive "In den Warenkorb"-Button
                     document.getElementById("productContainer").innerHTML = `
                         <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
                         <div class="product-info">
@@ -93,7 +82,6 @@
                         </div>
                     `;
 
-                    // Warenkorb-Button aktivieren
                     document.getElementById("addToCartBtn").addEventListener("click", () => {
                         addToCart(product);
                     });
@@ -104,17 +92,13 @@
                 });
         });
 
-        // Produkt zum Local Storage Warenkorb hinzufügen
         function addToCart(product) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-            const existingProduct = cart.find(item => item.id === product.id);
-
-            if (existingProduct) {
-                // Menge erhöhen
-                existingProduct.quantity += 1;
+            const existing = cart.find(item => item.id == product.id);
+            if (existing) {
+                existing.quantity += 1;
             } else {
-                // Neues Produkt hinzufügen
                 cart.push({
                     id: product.id,
                     name: product.name,

@@ -1,9 +1,3 @@
-<!-- 
-    Snackery – Hauptseite (index.php)
-    Diese Seite zeigt eine Übersicht mit Logo, Navigation und Einladungstext.
-    Technologien: HTML5, CSS, JavaScript (reines Frontend, kein PHP außer Dateiendung!)
--->
-
 <!DOCTYPE html>
 <html lang="de">
 
@@ -13,71 +7,95 @@
 
     <!-- Einbinden des zentralen Stylesheets -->
     <link rel="stylesheet" href="Frontend/res/css/style.css">
+
+    <!-- Sessionprüfung & Navigation aktualisieren -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("Backend/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const loginLink = document.getElementById("loginLink");
+                    const registerLink = document.getElementById("registerLink");
+                    const profileLink = document.getElementById("profileLink");
+                    const logoutLink = document.getElementById("logoutLink");
+
+                    if (data.loggedIn) {
+                        loginLink.style.display = "none";
+                        registerLink.style.display = "none";
+                        profileLink.style.display = "inline";
+                        logoutLink.style.display = "inline";
+                    } else {
+                        loginLink.style.display = "inline";
+                        registerLink.style.display = "inline";
+                        profileLink.style.display = "none";
+                        logoutLink.style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    console.error("Fehler bei der Session-Überprüfung:", error);
+                });
+        });
+    </script>
 </head>
+
 
 <body>
 
-    <!-- ==================== HEADER-BEREICH ==================== -->
+    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <!-- Klickbares Logo, führt zur Startseite -->
             <a href="index.html">
                 <img src="Frontend/res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigationsmenü -->
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
                 <li><a href="Frontend/sites/products.html">Produkte</a></li>
                 <li><a href="Frontend/sites/cart.html">Warenkorb</a></li>
-                <li><a href="Frontend/sites/login.html">Login</a></li>
-                <li><a href="Frontend/sites/register.html">Registrieren</a></li>
+                <li><a href="Frontend/sites/login.html" id="loginLink">Login</a></li>
+                <li><a href="Frontend/sites/register.html" id="registerLink">Registrieren</a></li>
+                <li><a href="Frontend/sites/profil.html" id="profileLink" style="display: none;">Mein Profil</a></li>
+                <li><a href="Backend/logout.php" id="logoutLink" style="display: none;">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ==================== HERO-SEKTION (Einladung) ==================== -->
+    <!-- ==================== HERO-SEKTION ==================== -->
     <section class="hero">
         <h1>Willkommen bei Snackery</h1>
         <p>Entdecke internationale Snacks aus aller Welt – direkt zu dir nach Hause geliefert!</p>
-
-        <!-- Button führt zur Produktübersicht -->
         <a href="Frontend/sites/products.html" class="btn">Jetzt entdecken</a>
     </section>
 
-    <!-- ==================== FEATURES-BEREICH ==================== -->
+    <!-- ==================== FEATURES ==================== -->
     <section class="features-section">
-        <!-- Feature 1: Weltweit verfügbar -->
         <div class="feature-box">
             <img src="Frontend/res/icons/global.png" alt="Weltweiter Versand">
             <h3>Weltweit verfügbar</h3>
-            <p>Internationale Süßigkeiten und Snacks – aus Japan, USA, Türkei und mehr.</p>
+            <p>Snacks aus Japan, USA, Türkei und mehr.</p>
         </div>
 
-        <!-- Feature 2: Schneller Versand -->
         <div class="feature-box">
             <img src="Frontend/res/icons/fast.png" alt="Schneller Versand">
             <h3>Schneller Versand</h3>
-            <p>Blitzschneller und sicherer Versand – in wenigen Tagen bei dir zuhause.</p>
+            <p>In wenigen Tagen bei dir zuhause.</p>
         </div>
 
-        <!-- Feature 3: Mit Liebe verpackt -->
         <div class="feature-box">
-            <img src="Frontend/res/icons/heart.png" alt="Mit Liebe ausgewählt">
+            <img src="Frontend/res/icons/heart.png" alt="Mit Liebe verpackt">
             <h3>Mit Liebe verpackt</h3>
-            <p>Jedes Paket wird liebevoll vorbereitet – dein Snack-Erlebnis zählt für uns.</p>
+            <p>Dein Snack-Erlebnis zählt für uns.</p>
         </div>
     </section>
 
-    <!-- ==================== FOOTER (Fußzeile) ==================== -->
+    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
-            <!-- Copyright -->
             <p>&copy; 2025 Snackery</p>
-
-            <!-- Footer-Links -->
             <div class="footer-links">
                 <a href="Frontend/sites/impressum.html">Impressum</a>
                 <a href="Frontend/sites/hilfe.html">Hilfe</a>

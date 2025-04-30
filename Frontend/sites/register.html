@@ -6,11 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrierung – Snackery</title>
 
-    <!-- Stylesheet für das Design -->
     <link rel="stylesheet" href="../res/css/style.css">
-
-    <!-- JavaScript zur Validierung des Formulars -->
     <script defer src="../js/register-validation.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../../Backend/logic/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        window.location.href = "profil.html";
+                    }
+                });
+
+            // Fehleranalyse per URL
+            const params = new URLSearchParams(window.location.search);
+            const errorBox = document.getElementById("errorBox");
+            const error = params.get("error");
+
+            if (error === "passwort") {
+                errorBox.textContent = "❌ Die Passwörter stimmen nicht überein.";
+            } else if (error === "existiert") {
+                errorBox.textContent = "❌ Benutzername oder E-Mail ist bereits vergeben.";
+            } else if (error === "datenbank") {
+                errorBox.textContent = "❌ Ein Fehler bei der Registrierung ist aufgetreten.";
+            }
+        });
+    </script>
 </head>
 
 <body>
@@ -18,13 +42,11 @@
     <!-- ========== HEADER ========== -->
     <header>
         <div class="logo">
-            <!-- Klickbares Logo zur Startseite -->
             <a href="../../index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigation ohne PHP -->
         <nav>
             <ul>
                 <li><a href="../../index.html">Startseite</a></li>
@@ -36,40 +58,27 @@
         </nav>
     </header>
 
-    <!-- ========== REGISTRIERUNGSBEREICH ========== -->
+    <!-- ========== REGISTRIERUNG ========== -->
     <main>
         <div class="register-container">
             <h2>Registrieren</h2>
 
-            <!-- 🚨 Fehlerbox (wird per JS befüllt, wenn Fehler in der URL sind) -->
             <div id="errorBox" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
 
-            <!-- Registrierungsformular -->
             <form action="../../Backend/register.php" method="POST" id="registerForm">
-
-                <!-- Vorname -->
                 <input type="text" name="firstname" placeholder="Vorname" required>
-
-                <!-- Nachname -->
                 <input type="text" name="lastname" placeholder="Nachname" required>
-
-                <!-- Benutzername -->
                 <input type="text" name="username" placeholder="Benutzername" required>
-
-                <!-- E-Mail-Adresse -->
                 <input type="email" name="email" placeholder="E-Mail-Adresse" required>
 
-                <!-- Adresse -->
                 <input type="text" name="street" placeholder="Straße" required>
                 <input type="text" name="housenumber" placeholder="Hausnummer" required>
                 <input type="text" name="postalcode" placeholder="PLZ" required>
                 <input type="text" name="city" placeholder="Ort" required>
 
-                <!-- Passwort -->
                 <input type="password" name="password" placeholder="Passwort" required>
                 <input type="password" name="password_repeat" placeholder="Passwort wiederholen" required>
 
-                <!-- Absenden -->
                 <button type="submit">Registrieren</button>
             </form>
         </div>
@@ -85,21 +94,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- 🔍 Fehler-Analyse & Anzeige via URL -->
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const error = params.get("error");
-        const box = document.getElementById("errorBox");
-
-        if (error === "passwort") {
-            box.textContent = "❌ Die Passwörter stimmen nicht überein.";
-        } else if (error === "existiert") {
-            box.textContent = "❌ Benutzername oder E-Mail ist bereits vergeben.";
-        } else if (error === "datenbank") {
-            box.textContent = "❌ Ein Fehler bei der Registrierung ist aufgetreten. Bitte versuche es erneut.";
-        }
-    </script>
 
 </body>
 

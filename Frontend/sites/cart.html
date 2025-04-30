@@ -1,8 +1,3 @@
-<!-- 
-    Snackery – Warenkorbseite
-    Zeigt Produkte aus dem LocalStorage an und berechnet automatisch die Gesamtsumme.
--->
-
 <!DOCTYPE html>
 <html lang="de">
 
@@ -12,6 +7,9 @@
 
     <!-- Zentrale CSS-Datei -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- Session-Überprüfung -->
+    <script src="../res/js/session-check.js"></script>
 </head>
 
 <body>
@@ -29,8 +27,8 @@
                 <li><a href="/Snackery/index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
-                <li><a href="login.html">Login</a></li>
-                <li><a href="register.html">Registrierung</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -42,6 +40,7 @@
 
         <h3 id="totalPrice">Gesamt: € 0.00</h3>
 
+        <a href="checkout.html" class="btn">Zur Kasse</a>
         <button id="clearCartBtn">Warenkorb leeren</button>
     </main>
 
@@ -58,7 +57,6 @@
 
     <!-- ========== JAVASCRIPT FÜR DEN WARENKORB ========== -->
     <script>
-        // Warenkorb laden und anzeigen
         function loadCart() {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
             const cartItemsContainer = document.getElementById("cartItems");
@@ -77,8 +75,11 @@
             cart.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "cart-item";
+
+                const safeName = document.createTextNode(item.name).textContent;
+
                 div.innerHTML = `
-                    <p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
+                    <p><strong>${safeName}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
                     <button onclick="removeFromCart(${item.id})">🗑️ Entfernen</button>
                 `;
                 cartItemsContainer.appendChild(div);
@@ -86,11 +87,9 @@
                 total += item.price * item.quantity;
             });
 
-            // Gesamtsumme anzeigen
             totalPriceElement.textContent = `Gesamt: € ${total.toFixed(2)}`;
         }
 
-        // Produkt aus dem Warenkorb entfernen
         function removeFromCart(productId) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -100,14 +99,14 @@
             loadCart();
         }
 
-        // Warenkorb komplett leeren
         document.getElementById("clearCartBtn").addEventListener("click", () => {
-            localStorage.removeItem("cart");
-            loadCart();
-            alert("🧹 Warenkorb geleert!");
+            if (confirm("🧹 Möchtest du wirklich den ganzen Warenkorb leeren?")) {
+                localStorage.removeItem("cart");
+                loadCart();
+                alert("✅ Warenkorb wurde geleert!");
+            }
         });
 
-        // Beim Laden der Seite
         window.addEventListener("DOMContentLoaded", loadCart);
     </script>
 

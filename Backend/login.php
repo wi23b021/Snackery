@@ -4,29 +4,31 @@
 // Dieses Skript verarbeitet die Anmeldung und startet eine Session.
 // 
 
-session_start(); // Session starten für Benutzerverwaltung
-header("Content-Type: application/json"); // Rückgabe im JSON-Format
+// Session starten für Benutzerverwaltung
+session_start();
 
-// 1. Verbindung zur Datenbank
+// CORS-Header setzen (für Cookies bei localhost)
+header("Access-Control-Allow-Origin: http://localhost");
+header("Access-Control-Allow-Credentials: true");
+header("Content-Type: application/json");
+
+// Verbindung zur Datenbank
 require_once __DIR__ . '/config/dbaccess.php';
 
-// 2. POST-Daten prüfen
+// POST-Daten prüfen
 if (!isset($_POST['username']) || !isset($_POST['password'])) {
-    // ❌ Fehlende Felder → Fehlerantwort
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "Benutzername und Passwort erforderlich."]);
     exit;
 }
 
-// 3. Eingaben abrufen
 $usernameOrEmail = $_POST['username'];
 $password = $_POST['password'];
 
-// 4. Verbindung zur Datenbank aufbauen
+// Datenbankverbindung aufbauen
 $db = new DbAccess();
 $conn = $db->connect();
 
-// 5. Benutzer anhand von Benutzername oder E-Mail suchen
 $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$usernameOrEmail, $usernameOrEmail]);
@@ -38,10 +40,13 @@ if ($user && password_verify($password, $user['password'])) {
     $_SESSION['username'] = $user['username'];
     $_SESSION['user'] = $user;
 
-    // Optional: Cookie setzen für "angemeldet bleiben"
-    if (isset($_POST['remember'])) {
-        setcookie("username", $user['username'], time() + (86400 * 30), "/"); // 30 Tage
-    }
+    // Sicherstellen, dass Session-Cookie nicht als "secure" markiert ist (für localhost!)
+    setcookie("PHPSESSID", session_id(), [
+        'path' => '/',
+        'httponly' => true,
+        'secure' => false, // ⚠️ Bei HTTPS auf true setzen
+        'samesite' => 'Lax'
+    ]);
 
     // Erfolgreiche Antwort zurücksenden
     echo json_encode([
@@ -51,7 +56,6 @@ if ($user && password_verify($password, $user['password'])) {
     ]);
     exit;
 } else {
-    // ❌ Benutzername oder Passwort falsch
     http_response_code(401);
     echo json_encode(["success" => false, "message" => "❌ Benutzername oder Passwort ist falsch."]);
     exit;

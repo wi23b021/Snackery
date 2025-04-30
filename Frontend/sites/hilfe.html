@@ -4,9 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <title>Hilfe – Snackery</title>
-
-    <!-- Einbindung des globalen CSS-Stylesheets -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- Sessionprüfung für Anzeige von Login/Profile -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../../Backend/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const loginLink = document.getElementById("loginLink");
+                    const registerLink = document.getElementById("registerLink");
+                    const profileLink = document.getElementById("profileLink");
+                    const logoutLink = document.getElementById("logoutLink");
+
+                    if (data.loggedIn) {
+                        loginLink.style.display = "none";
+                        registerLink.style.display = "none";
+                        profileLink.style.display = "inline";
+                        logoutLink.style.display = "inline";
+                    } else {
+                        loginLink.style.display = "inline";
+                        registerLink.style.display = "inline";
+                        profileLink.style.display = "none";
+                        logoutLink.style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    console.error("Fehler bei der Session-Überprüfung:", error);
+                });
+        });
+    </script>
 </head>
 
 <body>
@@ -14,20 +43,20 @@
     <!-- ========== KOPFBEREICH MIT NAVIGATION ========== -->
     <header>
         <div class="logo">
-            <!-- Klickbares Logo führt zur Startseite -->
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigation zu den Hauptseiten -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
-                <li><a href="login.html">Login</a></li>
-                <li><a href="register.html">Registrieren</a></li>
+                <li><a href="profil.html" id="profileLink" style="display: none;">Mein Profil</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="register.html" id="registerLink">Registrieren</a></li>
+                <li><a href="../../Backend/logout.php" id="logoutLink" style="display: none;">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -36,16 +65,16 @@
     <main class="register-container">
         <h1>Hilfe & Support</h1>
 
-        <!-- Häufige Fragen mit Antworten -->
         <p><strong>Wie kann ich bestellen?</strong><br> Lege einfach Produkte in den Warenkorb und folge dem Bestellvorgang Schritt für Schritt.</p>
 
-        <p><strong>Welche Zahlungsmöglichkeiten habe ich?</strong><br> Aktuell bieten wir Zahlungen per Erlagschein mit einer Zahlungsfrist von 7 Tagen an.</p>
+        <p><strong>Welche Zahlungsmöglichkeiten habe ich?</strong><br> Aktuell bieten wir Zahlungen per Erlagschein oder Bankomatkarte an.</p>
 
-        <p><strong>Wie kann ich meine Bestellung verfolgen?</strong><br> Nach Versand erhältst du eine Bestätigung per E-Mail. Ein Online-Tracking wird derzeit nicht angeboten.</p>
+        <p><strong>Wie kann ich meine Bestellung verfolgen?</strong><br> Nach Versand erhältst du eine Bestätigung per E-Mail. Online-Tracking ist derzeit nicht verfügbar.</p>
 
-        <p><strong>Ich habe mein Passwort vergessen. Was nun?</strong><br> Kontaktiere uns per E-Mail an <a href="mailto:support@snackery.at">support@snackery.at</a> – wir helfen dir gerne weiter.</p>
+        <p><strong>Ich habe mein Passwort vergessen. Was nun?</strong><br> Kontaktiere uns per E-Mail an
+            <a href="mailto:support@snackery.at">support@snackery.at</a> – wir helfen dir gerne weiter.</p>
 
-        <p><strong>Support-Kontakt:</strong><br> 📧 support@snackery.at<br> 📞 +43 660 123 4567</p>
+        <p><strong>Support-Kontakt:</strong><br> 📧 <a href="mailto:support@snackery.at">support@snackery.at</a><br> 📞 +43 660 123 4567</p>
     </main>
 
     <!-- ========== FUSSZEILE ========== -->

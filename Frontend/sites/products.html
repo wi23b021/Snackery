@@ -1,18 +1,11 @@
-<!-- 
-    Snackery – Produktübersicht (products.html)
-    Diese Seite zeigt alle verfügbaren Produkte mit Filter- und Suchfunktion.
-    Technologien: HTML5, CSS, JavaScript (AJAX-Fetch)
--->
-
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <title>Produkte – Snackery</title>
-
-    <!-- Verknüpfung mit globaler CSS-Datei -->
     <link rel="stylesheet" href="../res/css/style.css">
+    <script src="../res/js/session-check.js" defer></script>
 </head>
 
 <body>
@@ -20,20 +13,17 @@
     <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <!-- Klick auf Logo führt zur Startseite -->
             <a href="/Snackery/index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
-
-        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
-                <li><a href="login.html">Login</a></li>
-                <li><a href="register.html">Registrierung</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -42,7 +32,7 @@
     <main>
         <h2>Unsere Snacks</h2>
 
-        <!-- Filterbereich für Suche und Kategorien -->
+        <!-- Filterbereich -->
         <section class="filter-section">
             <input type="text" id="searchInput" placeholder="🔍 Nach Produkt suchen...">
             <select id="categoryFilter">
@@ -53,7 +43,7 @@
             </select>
         </section>
 
-        <!-- Container für dynamisch geladene Produkte -->
+        <!-- Produktanzeige -->
         <div class="product-grid" id="productGrid"></div>
     </main>
 
@@ -68,24 +58,33 @@
         </div>
     </footer>
 
-    <!-- ==================== JAVASCRIPT ZUM LADEN DER PRODUKTE ==================== -->
+    <!-- ==================== PRODUKTE LADEN ==================== -->
     <script>
-        // Alle Produkte werden hier gespeichert
         let allProducts = [];
 
-        // Produkte vom Backend abrufen
-        fetch("../../Backend/logic/requestHandler.php?action=getProducts")
+        // Produkte vom Server laden
+        fetch("../../Backend/logic/requestHandler.php?action=getProducts", {
+                credentials: "include"
+            })
             .then(response => response.json())
             .then(products => {
                 allProducts = products;
-                renderProducts(products); // Produkte anzeigen
+                renderProducts(products);
             })
-            .catch(error => console.error("❌ Fehler beim Laden der Produkte:", error));
+            .catch(error => {
+                console.error("❌ Fehler beim Laden der Produkte:", error);
+                document.getElementById("productGrid").innerHTML = "<p>❌ Produkte konnten nicht geladen werden.</p>";
+            });
 
-        // Funktion zum Rendern der Produkte im HTML
+        // Produkte anzeigen
         function renderProducts(products) {
             const grid = document.getElementById("productGrid");
-            grid.innerHTML = ""; // Vorherige Produkte löschen
+            grid.innerHTML = "";
+
+            if (!products.length) {
+                grid.innerHTML = "<p>Keine Produkte verfügbar.</p>";
+                return;
+            }
 
             products.forEach(product => {
                 const card = document.createElement("div");
@@ -101,21 +100,19 @@
             });
         }
 
-        // Funktion zum Filtern der Produkte
+        // Filter anwenden
         function applyFilters() {
-            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-            const selectedCategory = document.getElementById("categoryFilter").value;
+            const search = document.getElementById("searchInput").value.toLowerCase();
+            const category = document.getElementById("categoryFilter").value;
 
-            const filteredProducts = allProducts.filter(product => {
-                const matchesSearch = product.name.toLowerCase().includes(searchTerm);
-                const matchesCategory = selectedCategory === "" || product.category === selectedCategory;
-                return matchesSearch && matchesCategory;
-            });
+            const filtered = allProducts.filter(p =>
+                p.name.toLowerCase().includes(search) &&
+                (category === "" || p.category === category)
+            );
 
-            renderProducts(filteredProducts);
+            renderProducts(filtered);
         }
 
-        // Event Listener für Filterfelder
         document.getElementById("searchInput").addEventListener("input", applyFilters);
         document.getElementById("categoryFilter").addEventListener("change", applyFilters);
     </script>

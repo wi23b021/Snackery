@@ -1,18 +1,11 @@
-<!-- 
-    Snackery – Bestellung bearbeiten (edit_order.html)
-    Diese Seite erlaubt Admins, den Status von Bestellungen zu ändern.
-    Technologien: HTML5, CSS, JavaScript (AJAX)
--->
-
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <title>Bestellung bearbeiten – Snackery</title>
-
-    <!-- Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
+    <script src="../res/js/session-check.js" defer></script>
 </head>
 
 <body>
@@ -30,6 +23,7 @@
             <ul>
                 <li><a href="admin.html">Adminbereich</a></li>
                 <li><a href="admin_orders.html">Zurück zu Bestellungen</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -54,32 +48,33 @@
             <button type="submit">Änderung speichern</button>
         </form>
 
-        <!-- Feedbackmeldung -->
-        <p id="feedback"></p>
+        <!-- Bereich für Erfolg oder Fehler -->
+        <p id="feedback" style="margin-top: 20px; font-weight: bold;"></p>
     </main>
 
     <!-- ==================== JAVASCRIPT ==================== -->
     <script>
-        // Formular absenden
         document.getElementById("editOrderForm").addEventListener("submit", function(e) {
-            e.preventDefault(); // Verhindert Seitenneuladen
+            e.preventDefault(); // ❌ Seitenneuladen verhindern
 
             const formData = new FormData(this);
 
-            // Daten an Backend senden
             fetch("../../Backend/logic/requestHandler.php?action=editOrder", {
                     method: "POST",
-                    body: formData
+                    body: formData,
+                    credentials: "include" // ✅ Session-Cookie mitsenden
                 })
                 .then(response => response.json())
                 .then(data => {
                     const feedback = document.getElementById("feedback");
-                    feedback.textContent = data.message;
+                    feedback.textContent = data.message || "Änderung gespeichert.";
                     feedback.style.color = data.success ? "green" : "red";
                 })
                 .catch(error => {
-                    document.getElementById("feedback").textContent = "❌ Fehler beim Senden.";
-                    console.error("Fehler:", error);
+                    console.error("❌ Fehler beim Senden:", error);
+                    const feedback = document.getElementById("feedback");
+                    feedback.textContent = "❌ Serverfehler beim Senden.";
+                    feedback.style.color = "red";
                 });
         });
     </script>

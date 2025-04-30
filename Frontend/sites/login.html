@@ -1,23 +1,15 @@
-<!-- 
-    Snackery – Login-Seite (login.html)
-    Diese Seite ermöglicht den Benutzern die Anmeldung mit Benutzername/E-Mail und Passwort.
-    Technologien: HTML5, CSS, JavaScript (AJAX-Fetch)
--->
-
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8" />
     <title>Login – Snackery</title>
-
-    <!-- Verknüpfung mit globalem Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css" />
+    <script defer src="../res/js/session-check.js"></script>
 
     <!-- JavaScript für das Login-Handling -->
     <script defer>
         document.addEventListener("DOMContentLoaded", function() {
-            // ✅ Anzeige einer Erfolgsmeldung nach Registrierung
             const params = new URLSearchParams(window.location.search);
             const messageBox = document.getElementById("loginMessage");
 
@@ -26,32 +18,28 @@
                 messageBox.style.color = "green";
             }
 
-            // ✅ Loginformular-Handling
             const loginForm = document.getElementById("loginForm");
             loginForm.addEventListener("submit", async function(e) {
-                e.preventDefault(); // Verhindert Seitenneuladen
+                e.preventDefault();
 
                 const formData = new FormData(loginForm);
                 const data = new URLSearchParams(formData);
 
-                // Sende Login-Daten an das Backend
                 const response = await fetch("../../Backend/login.php", {
                     method: "POST",
                     body: data,
-                    credentials: "include" // ➡️ Session-Cookie mitsenden!
+                    credentials: "include"
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    // Erfolgreich eingeloggt → Weiterleitung
                     if (result.role === "admin") {
                         window.location.href = "admin.html";
                     } else {
                         window.location.href = "profil.html?login=success";
                     }
                 } else {
-                    // Fehleranzeige
                     messageBox.textContent = result.message || "❌ Login fehlgeschlagen.";
                     messageBox.style.color = "red";
                 }
@@ -70,14 +58,15 @@
             </a>
         </div>
 
-        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
-                <li><a href="login.html">Login</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
                 <li><a href="register.html">Registrieren</a></li>
+                <li><a href="profil.html" id="profileLink" style="display: none;">Mein Profil</a></li>
+                <li><a href="../../Backend/logout.php" id="logoutLink" style="display: none;">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -87,14 +76,12 @@
         <div class="register-container">
             <h2>Login</h2>
 
-            <!-- Formular zur Benutzeranmeldung -->
             <form id="loginForm">
                 <input type="text" name="username" placeholder="E-Mail oder Benutzername" required />
                 <input type="password" name="password" placeholder="Passwort" required />
                 <button type="submit">Einloggen</button>
             </form>
 
-            <!-- Platz für Fehlermeldungen -->
             <p id="loginMessage" class="message-box"></p>
         </div>
     </main>

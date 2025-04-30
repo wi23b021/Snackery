@@ -1,18 +1,11 @@
-<!-- 
-    Snackery – Produkt löschen (delete_product.html)
-    Diese Seite löscht ein Produkt basierend auf der ID in der URL.
-    Technologien: HTML5, CSS, JavaScript (AJAX)
--->
-
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
-    <title>Produkt löschen – Snackery</title>
-
-    <!-- Verknüpfung mit globalem Stylesheet -->
+    <title>Produkt bearbeiten – Snackery</title>
     <link rel="stylesheet" href="../res/css/style.css">
+    <script src="../res/js/session-check.js" defer></script>
 </head>
 
 <body>
@@ -24,54 +17,94 @@
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
-
-        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="/Snackery/index.html">Startseite</a></li>
-                <li><a href="admin_products.html">Zurück zur Produktübersicht</a></li>
+                <li><a href="admin_products.html">Zurück</a></li>
+                <li><a href="../../Backend/logout.php">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ==================== LÖSCHBESTÄTIGUNG ==================== -->
+    <!-- ==================== PRODUKT BEARBEITEN ==================== -->
     <main>
         <div class="register-container">
-            <h2>Produkt wird gelöscht...</h2>
-            <p>Bitte einen Moment Geduld.</p>
+            <h2>Produkt bearbeiten</h2>
+
+            <!-- Formular für Produktdaten -->
+            <form id="editProductForm">
+                <input type="text" id="name" placeholder="Produktname" required>
+                <input type="number" step="0.01" id="price" placeholder="Preis (€)" required>
+                <input type="text" id="category" placeholder="Kategorie" required>
+
+                <button type="submit">Speichern</button>
+            </form>
         </div>
     </main>
 
-    <!-- ==================== JAVASCRIPT: PRODUKT LÖSCHEN ==================== -->
+    <!-- ==================== JAVASCRIPT ==================== -->
     <script>
-        // Produkt-ID aus der URL lesen
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
 
         if (!productId) {
-            // Falls keine ID vorhanden ist, zurück zur Produktübersicht
-            window.location.href = "admin_products.html";
+            window.location.href = 'admin_products.html';
         }
 
-        // Produkt löschen via Fetch
-        fetch(`../../Backend/logic/requestHandler.php?action=deleteProduct&id=${productId}`, {
-                method: "DELETE"
+        // Produktdetails laden
+        fetch(`../../Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
+                credentials: "include"
             })
             .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    alert("✅ Produkt erfolgreich gelöscht!");
-                } else {
-                    alert("❌ Fehler beim Löschen des Produkts.");
+            .then(product => {
+                if (!product || !product.id) {
+                    alert("❌ Produkt nicht gefunden.");
+                    window.location.href = "admin_products.html";
+                    return;
                 }
-                // Zurück zur Produktliste
-                window.location.href = "admin_products.html";
+
+                document.getElementById('name').value = product.name;
+                document.getElementById('price').value = product.price;
+                document.getElementById('category').value = product.category;
             })
             .catch(error => {
-                alert("❌ Serverfehler beim Löschen.");
+                alert("❌ Fehler beim Laden des Produkts.");
                 console.error(error);
                 window.location.href = "admin_products.html";
             });
+
+        // Produkt aktualisieren
+        document.getElementById("editProductForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const updatedProduct = {
+                name: document.getElementById("name").value.trim(),
+                price: parseFloat(document.getElementById("price").value),
+                category: document.getElementById("category").value.trim()
+            };
+
+            fetch(`../../Backend/logic/requestHandler.php?action=updateProduct&id=${productId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(updatedProduct),
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert("✅ Produkt erfolgreich aktualisiert!");
+                        window.location.href = "admin_products.html";
+                    } else {
+                        alert("❌ Fehler: " + (result.message || "Unbekannter Fehler"));
+                    }
+                })
+                .catch(error => {
+                    alert("❌ Serverfehler beim Speichern.");
+                    console.error(error);
+                });
+        });
     </script>
 
 </body>
