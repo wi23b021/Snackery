@@ -1,57 +1,70 @@
 <?php
 //
-// Snackery – Datenhandler für Produktabfragen (dataHandler.php)
-// Stellt Funktionen zur Verfügung, um Produktdaten aus der Datenbank abzurufen.
+// ==============================================
+// Snackery – Datenhandler für Produktabfragen
+// ==============================================
+//
+// Diese Datei stellt zwei zentrale Funktionen zur Verfügung:
+// - getAllProducts() holt alle Produkte aus der Datenbank
+// - getProductById($id) holt ein einzelnes Produkt anhand seiner ID
 //
 
-// Die Datei "dbaccess.php" wird eingebunden, damit auf die Datenbankverbindung zugegriffen werden kann.
-require_once __DIR__ . '/dbaccess.php';
+// ==============================================
+// 1. Datenbankklasse einbinden
+// ==============================================
+
+require_once __DIR__ . '/dbaccess.php'; // Verbindung über PDO
+
+
+// ==============================================
+// 2. Alle Produkte aus der Datenbank abrufen
+// ==============================================
 
 /**
- * Holt alle Produkte aus der Datenbank.
+ * Holt alle Produkte aus der Datenbank, sortiert nach Erstellungsdatum (neueste zuerst).
  *
- * @return array Ein Array mit allen Produkten
+ * @return array Ein Array mit Produkten (jeweils als assoziatives Array)
  */
 function getAllProducts() {
-    // Erstellt ein neues Objekt der Klasse DbAccess, um auf die Datenbank zuzugreifen.
-    $db = new DbAccess();
+    try {
+        $db = new DbAccess();
+        $conn = $db->connect();
 
-    // Baut die Verbindung zur Datenbank auf.
-    $conn = $db->connect();
+        $stmt = $conn->prepare("SELECT * FROM products ORDER BY created_at DESC");
+        $stmt->execute();
 
-    // Bereitet eine SQL-Abfrage vor, die alle Produkte nach dem Erstellungsdatum sortiert (neueste zuerst).
-    $stmt = $conn->prepare("SELECT * FROM products ORDER BY created_at DESC");
-
-    // Führt die vorbereitete SQL-Abfrage aus.
-    $stmt->execute();
-
-    // Gibt alle Ergebnisse als assoziatives Array zurück.
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        // Fehlerprotokollierung (nur optional in Produktivumgebungen)
+        error_log("Fehler in getAllProducts(): " . $e->getMessage());
+        return [];
+    }
 }
 
+
+// ==============================================
+// 3. Einzelnes Produkt anhand der ID abrufen
+// ==============================================
+
 /**
- * Holt ein einzelnes Produkt anhand der ID.
+ * Holt ein einzelnes Produkt über dessen ID.
  *
- * @param int $productId Die Produkt-ID
- * @return array|null Produktdaten oder null, falls nicht gefunden
+ * @param int $productId Die ID des Produkts
+ * @return array|null Das Produkt als assoziatives Array oder null, falls nicht gefunden
  */
 function getProductById($productId) {
-    // Erstellt ein neues Objekt der Klasse DbAccess für die Datenbankverbindung.
-    $db = new DbAccess();
+    try {
+        $db = new DbAccess();
+        $conn = $db->connect();
 
-    // Stellt eine Verbindung zur Datenbank her.
-    $conn = $db->connect();
+        $stmt = $conn->prepare("SELECT * FROM products WHERE id = :id");
+        $stmt->bindParam(':id', $productId, PDO::PARAM_INT);
+        $stmt->execute();
 
-    // Bereitet eine SQL-Abfrage vor, die ein Produkt mit einer bestimmten ID auswählt.
-    $stmt = $conn->prepare("SELECT * FROM products WHERE id = :id");
-
-    // Bindet den Parameter ':id' an die übergebene Produkt-ID als Integer.
-    $stmt->bindParam(':id', $productId, PDO::PARAM_INT);
-
-    // Führt die Abfrage aus.
-    $stmt->execute();
-
-    // Gibt das Ergebnis als assoziatives Array zurück, oder null, wenn kein Produkt gefunden wurde.
-    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    } catch (Exception $e) {
+        error_log("Fehler in getProductById(): " . $e->getMessage());
+        return null;
+    }
 }
 ?>

@@ -4,47 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <title>Warenkorb – Snackery</title>
-
-    <!-- Zentrale CSS-Datei -->
     <link rel="stylesheet" href="../res/css/style.css">
-
-    <!-- Session-Überprüfung -->
-    <script src="../res/js/session-check.js"></script>
+    <script src="../res/js/session-check.js" defer></script>
 </head>
 
 <body>
 
-    <!-- ========== KOPFBEREICH ========== -->
+    <!-- ========== HEADER MIT NAVIGATION ========== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
         <nav>
             <ul>
-                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
-                <li><a href="profil.html">Mein Profil</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="profil.html" id="profileLink">Mein Profil</a></li>
+                <li><a href="my_orders.html" id="myOrdersLink" style="display: none;">Meine Bestellungen</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ========== HAUPTINHALT ========== -->
     <main style="text-align: center; padding: 50px;">
         <h1>🛒 Dein Warenkorb</h1>
-        <div id="cartItems"></div>
 
+        <div id="cartItems"></div>
         <h3 id="totalPrice">Gesamt: € 0.00</h3>
 
         <a href="checkout.html" class="btn">Zur Kasse</a>
         <button id="clearCartBtn">Warenkorb leeren</button>
     </main>
 
-    <!-- ========== FUßBEREICH ========== -->
+    <!-- ========== FUSSZEILE ========== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -55,18 +52,18 @@
         </div>
     </footer>
 
-    <!-- ========== JAVASCRIPT FÜR DEN WARENKORB ========== -->
+    <!-- ========== JS ========== -->
     <script>
         function loadCart() {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const cartItemsContainer = document.getElementById("cartItems");
-            const totalPriceElement = document.getElementById("totalPrice");
+            const container = document.getElementById("cartItems");
+            const totalDisplay = document.getElementById("totalPrice");
 
-            cartItemsContainer.innerHTML = "";
+            container.innerHTML = "";
 
             if (cart.length === 0) {
-                cartItemsContainer.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
-                totalPriceElement.textContent = "Gesamt: € 0.00";
+                container.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
+                totalDisplay.textContent = "Gesamt: € 0.00";
                 return;
             }
 
@@ -75,26 +72,20 @@
             cart.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "cart-item";
-
-                const safeName = document.createTextNode(item.name).textContent;
-
                 div.innerHTML = `
-                    <p><strong>${safeName}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
+                    <p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
                     <button onclick="removeFromCart(${item.id})">🗑️ Entfernen</button>
                 `;
-                cartItemsContainer.appendChild(div);
-
+                container.appendChild(div);
                 total += item.price * item.quantity;
             });
 
-            totalPriceElement.textContent = `Gesamt: € ${total.toFixed(2)}`;
+            totalDisplay.textContent = `Gesamt: € ${total.toFixed(2)}`;
         }
 
         function removeFromCart(productId) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
             cart = cart.filter(item => item.id !== productId);
-
             localStorage.setItem("cart", JSON.stringify(cart));
             loadCart();
         }
@@ -107,7 +98,43 @@
             }
         });
 
-        window.addEventListener("DOMContentLoaded", loadCart);
+        document.getElementById("logoutBtn").addEventListener("click", function(e) {
+            e.preventDefault();
+            fetch("/Snackery/Backend/logout.php", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = "index.html";
+                    } else {
+                        alert("❌ Logout fehlgeschlagen.");
+                    }
+                })
+                .catch(() => {
+                    alert("❌ Serverfehler beim Logout.");
+                });
+        });
+
+        // Neue Prüfung für "Meine Bestellungen"
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCart();
+
+            fetch("/Snackery/Backend/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        document.getElementById("myOrdersLink").style.display = "inline";
+                    } else {
+                        document.getElementById("myOrdersLink").style.display = "none";
+                    }
+                })
+                .catch(() => {
+                    document.getElementById("myOrdersLink").style.display = "none";
+                });
+        });
     </script>
 
 </body>

@@ -9,30 +9,27 @@
 </head>
 
 <body>
-
-    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
         <nav>
             <ul>
-                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
-                <li><a href="profil.html">Mein Profil</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="profil.html" id="profileLink">Mein Profil</a></li>
+                <li><a href="my_orders.html" id="myOrdersLink" style="display: none;">Meine Bestellungen</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ==================== PRODUKTÜBERSICHT ==================== -->
     <main>
         <h2>Unsere Snacks</h2>
 
-        <!-- Filterbereich -->
         <section class="filter-section">
             <input type="text" id="searchInput" placeholder="🔍 Nach Produkt suchen...">
             <select id="categoryFilter">
@@ -43,11 +40,11 @@
             </select>
         </section>
 
-        <!-- Produktanzeige -->
-        <div class="product-grid" id="productGrid"></div>
+        <div class="product-grid" id="productGrid">
+            <p>🔄 Produkte werden geladen...</p>
+        </div>
     </main>
 
-    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -58,49 +55,82 @@
         </div>
     </footer>
 
-    <!-- ==================== PRODUKTE LADEN ==================== -->
     <script>
+        // === Session Check für "Meine Bestellungen" ===
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("/Snackery/Backend/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        document.getElementById("myOrdersLink").style.display = "inline";
+                    } else {
+                        document.getElementById("myOrdersLink").style.display = "none";
+                    }
+                })
+                .catch(() => {
+                    document.getElementById("myOrdersLink").style.display = "none";
+                });
+        });
+
         let allProducts = [];
 
-        // Produkte vom Server laden
-        fetch("../../Backend/logic/requestHandler.php?action=getProducts", {
+        fetch("/Snackery/Backend/logic/requestHandler.php?action=getProducts", {
                 credentials: "include"
             })
-            .then(response => response.json())
-            .then(products => {
-                allProducts = products;
-                renderProducts(products);
+            .then(response =>
+                response.json().then(json => ({
+                    status: response.status,
+                    body: json
+                }))
+            )
+            .then(result => {
+                if (result.status === 200 && Array.isArray(result.body)) {
+                    allProducts = result.body;
+                    renderProducts(allProducts);
+                } else {
+                    showError("❌ Produkte konnten nicht geladen werden.");
+                }
             })
             .catch(error => {
                 console.error("❌ Fehler beim Laden der Produkte:", error);
-                document.getElementById("productGrid").innerHTML = "<p>❌ Produkte konnten nicht geladen werden.</p>";
+                showError("❌ Serverfehler – Produkte konnten nicht geladen werden.");
             });
 
-        // Produkte anzeigen
+        function showError(msg) {
+            const grid = document.getElementById("productGrid");
+            grid.innerHTML = `<p>${msg}</p>`;
+        }
+
         function renderProducts(products) {
             const grid = document.getElementById("productGrid");
             grid.innerHTML = "";
 
             if (!products.length) {
-                grid.innerHTML = "<p>Keine Produkte verfügbar.</p>";
+                grid.innerHTML = "<p>❌ Keine Produkte verfügbar.</p>";
                 return;
             }
 
             products.forEach(product => {
                 const card = document.createElement("div");
                 card.className = "product-card";
+
+                const priceFormatted = parseFloat(product.price).toFixed(2).replace(".", ",");
+
                 card.innerHTML = `
                     <a href="product_detail.html?id=${product.id}">
-                        <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
+                        <img src="../../Backend/productpictures/${product.image}" 
+                             alt="${product.name}" 
+                             onerror="this.src='../res/img/fallback.jpg';">
                         <h3>${product.name}</h3>
-                        <p>€ ${parseFloat(product.price).toFixed(2)}</p>
+                        <p>€ ${priceFormatted}</p>
                     </a>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // Filter anwenden
         function applyFilters() {
             const search = document.getElementById("searchInput").value.toLowerCase();
             const category = document.getElementById("categoryFilter").value;
@@ -115,8 +145,25 @@
 
         document.getElementById("searchInput").addEventListener("input", applyFilters);
         document.getElementById("categoryFilter").addEventListener("change", applyFilters);
-    </script>
 
+        document.getElementById("logoutBtn").addEventListener("click", function(e) {
+            e.preventDefault();
+            fetch("/Snackery/Backend/logout.php", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = "index.html";
+                    } else {
+                        alert("❌ Fehler beim Logout.");
+                    }
+                })
+                .catch(() => {
+                    alert("❌ Serverfehler beim Logout.");
+                });
+        });
+    </script>
 </body>
 
 </html>

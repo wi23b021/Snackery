@@ -6,37 +6,59 @@
     <title>Produkt bearbeiten – Snackery</title>
     <link rel="stylesheet" href="../res/css/style.css">
     <script src="../res/js/session-check.js" defer></script>
+
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => {
+            const logoutLink = document.getElementById("logoutBtn");
+
+            logoutLink.addEventListener("click", function(e) {
+                e.preventDefault();
+
+                fetch("/Snackery/Backend/logout.php", {
+                        credentials: "include"
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = "index.html";
+                        } else {
+                            alert("❌ Fehler beim Logout.");
+                        }
+                    })
+                    .catch(() => {
+                        alert("❌ Serverfehler beim Logout.");
+                    });
+            });
+        });
+    </script>
 </head>
 
 <body>
 
-    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
         <nav>
             <ul>
-                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="index.html">Startseite</a></li>
                 <li><a href="admin_products.html">Zurück</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ==================== PRODUKT BEARBEITEN ==================== -->
     <main>
         <div class="register-container">
             <h2>Produkt bearbeiten</h2>
 
-            <!-- Formular für Produktdaten -->
             <form id="editProductForm">
                 <input type="text" id="name" placeholder="Produktname" required>
                 <input type="number" step="0.01" id="price" placeholder="Preis (€)" required>
                 <input type="text" id="category" placeholder="Kategorie" required>
-
                 <button type="submit">Speichern</button>
             </form>
 
@@ -44,20 +66,31 @@
         </div>
     </main>
 
-    <!-- ==================== JAVASCRIPT ==================== -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        const productId = new URLSearchParams(window.location.search).get('id');
+        const productId = new URLSearchParams(window.location.search).get("id");
 
         if (!productId) {
             alert("❌ Keine Produkt-ID gefunden.");
             window.location.href = "admin_products.html";
         }
 
-        // Produktdaten laden
-        fetch(`../../Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
+        fetch(`/Snackery/Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
                 credentials: "include"
             })
-            .then(response => response.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Serverantwort nicht OK");
+                return res.json();
+            })
             .then(product => {
                 if (!product || !product.id) {
                     alert("❌ Produkt nicht gefunden.");
@@ -65,17 +98,16 @@
                     return;
                 }
 
-                document.getElementById('name').value = product.name;
-                document.getElementById('price').value = product.price;
-                document.getElementById('category').value = product.category;
+                document.getElementById("name").value = product.name;
+                document.getElementById("price").value = product.price;
+                document.getElementById("category").value = product.category;
             })
             .catch(error => {
+                console.error("Fehler beim Laden des Produkts:", error);
                 alert("❌ Fehler beim Laden des Produkts.");
-                console.error(error);
                 window.location.href = "admin_products.html";
             });
 
-        // Formular absenden
         document.getElementById("editProductForm").addEventListener("submit", function(e) {
             e.preventDefault();
 
@@ -85,7 +117,7 @@
                 category: document.getElementById("category").value.trim()
             };
 
-            fetch(`../../Backend/logic/requestHandler.php?action=updateProduct&id=${productId}`, {
+            fetch(`/Snackery/Backend/logic/requestHandler.php?action=updateProduct&id=${productId}`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -93,10 +125,15 @@
                     body: JSON.stringify(updatedProduct),
                     credentials: "include"
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error("Serverfehler bei updateProduct");
+                    return response.json();
+                })
                 .then(result => {
                     const feedback = document.getElementById("feedback");
-                    feedback.textContent = result.success ? "✅ Produkt erfolgreich gespeichert!" : "❌ " + (result.message || "Fehler beim Speichern.");
+                    feedback.textContent = result.success ?
+                        "✅ Produkt erfolgreich gespeichert!" :
+                        "❌ " + (result.message || "Fehler beim Speichern.");
                     feedback.style.color = result.success ? "green" : "red";
 
                     if (result.success) {
@@ -105,12 +142,12 @@
                 })
                 .catch(error => {
                     console.error("❌ Serverfehler:", error);
-                    document.getElementById("feedback").textContent = "❌ Fehler beim Senden.";
-                    document.getElementById("feedback").style.color = "red";
+                    const feedback = document.getElementById("feedback");
+                    feedback.textContent = "❌ Fehler beim Senden.";
+                    feedback.style.color = "red";
                 });
         });
     </script>
-
 </body>
 
 </html>

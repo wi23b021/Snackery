@@ -1,266 +1,350 @@
 <?php
-// Snackery – Verbesserter zentraler Request-Handler für Frontend-AJAX
+// ==============================================
+// Snackery – Zentraler Request-Handler für AJAX-Anfragen
+// ==============================================
 
-// Startet die PHP-Session (wichtig für Login-Status, Benutzerrollen etc.)
 session_start();
 
-// === CORS-Header (für Zugriff vom Frontend bei Entwicklung auf localhost) ===
-header("Access-Control-Allow-Origin: http://localhost"); // Nur localhost erlaubt
-header("Access-Control-Allow-Credentials: true");        // Cookies/Sessions mitübertragen
-header("Content-Type: application/json");                // Antwort im JSON-Format
-header("Access-Control-Allow-Methods: POST, GET, DELETE, OPTIONS"); // Erlaubte Methoden
-header("Access-Control-Allow-Headers: Content-Type");    // Erlaubter Header
+header("Access-Control-Allow-Origin: http://localhost");
+header("Access-Control-Allow-Credentials: true");
+header("Content-Type: application/json");
+header("Access-Control-Allow-Methods: POST, GET, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 
-// Falls ein Preflight-Request kommt (z.B. bei POST mit Headern), sofort antworten
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// === Datenbank- und Produktfunktionen einbinden ===
 require_once __DIR__ . '/../config/dataHandler.php';
 require_once __DIR__ . '/../config/dbaccess.php';
 
-// Datenbankverbindung aufbauen
 $db = new DbAccess();
 $conn = $db->connect();
 
-// Aktion aus der URL holen (z.B. ?action=getProducts)
 $action = $_GET['action'] ?? '';
 
-// ======== 1) Alle Produkte abrufen ==========
-if ($action === 'getProducts') {
-    $products = getAllProducts(); // Holt alle Produkte über dataHandler.php
-    echo json_encode($products);  // Gibt sie im JSON-Format zurück
-    exit;
-}
-
-// ======== 2) Einzelnes Produkt abrufen ==========
-if ($action === 'getProduct') {
-    $productId = $_GET['id'] ?? null;
-    if (!$productId) {
-        echo json_encode(['success' => false, 'message' => 'Produkt-ID fehlt.']);
+// ========== PROFILDATEN HOLEN ==========
+if ($action === 'getProfile') {
+    if (!isset($_SESSION['user'])) {
+        http_response_code(401);
+        echo json_encode(["success" => false, "message" => "Nicht eingeloggt."]);
         exit;
     }
 
-    // Hole das Produkt aus der Datenbank
-    $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
-    $stmt->execute([$productId]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    $userId = $_SESSION['user']['id'];
+    $stmt = $conn->prepare("SELECT id, username, email, firstname, lastname, street, housenumber, postalcode, city, role, iban, cardnumber, bankname FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
 
+    echo $user ? json_encode($user) : json_encode(["success" => false, "message" => "Benutzer nicht gefunden."]);
+    exit;
+}
+
+// ========== PRODUKTE LADEN ==========
+if ($action === 'getProducts') {
+    echo json_encode(getAllProducts());
+    exit;
+}
+
+// ========== EINZELNES PRODUKT ==========
+if ($action === 'getProduct') {
+    $id = $_GET['id'] ?? null;
+    if (!$id) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Produkt-ID fehlt.']);
+        exit;
+    }
+    $product = getProductById($id);
     echo $product ? json_encode($product) : json_encode(['success' => false, 'message' => 'Produkt nicht gefunden.']);
     exit;
 }
 
-// ======== 3) Produkt aktualisieren (nur Admins) ==========
+// ========== PRODUKT BEARBEITEN ==========
 if ($action === 'updateProduct') {
-    // Admin-Check
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
+        exit;
+    }
+
     if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Zugriff verweigert']);
+        echo json_encode(['success' => false, 'message' => 'Nur Admins dürfen Produkte bearbeiten.']);
         exit;
     }
 
-    // Daten aus der URL und dem Request-Body holen
-    $productId = $_GET['id'] ?? null;
+    $id = $_GET['id'] ?? null;
     $data = json_decode(file_get_contents("php://input"), true);
 
-    // Prüfen ob alle Pflichtdaten vorhanden sind
-    if (!$productId || !$data || !isset($data['name'], $data['price'], $data['category'])) {
-        echo json_encode(['success' => false, 'message' => 'Ungültige Daten.']);
+    if (!$id || !$data || !isset($data['name'], $data['price'], $data['category'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Ungültige oder unvollständige Daten.']);
         exit;
     }
 
-    // Update-Query ausführen
     $stmt = $conn->prepare("UPDATE products SET name = ?, price = ?, category = ? WHERE id = ?");
-    $stmt->execute([$data['name'], $data['price'], $data['category'], $productId]);
+    $stmt->execute([$data['name'], $data['price'], $data['category'], $id]);
 
     echo json_encode(['success' => true, 'message' => 'Produkt aktualisiert.']);
     exit;
 }
 
-// ======== 4) Produkt hinzufügen (nur Admins) ==========
-if ($action === 'addProduct') {
-    // Nur Admins dürfen Produkte hinzufügen
+// ========== ALLE BENUTZER LADEN ==========
+if ($action === 'getUsers') {
     if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Nur Admins dürfen Produkte hinzufügen']);
+        echo json_encode(['success' => false, 'message' => 'Nur Admins dürfen Benutzer sehen.']);
         exit;
     }
 
-    // Nur POST-Anfragen erlaubt
+    $stmt = $conn->prepare("SELECT * FROM users");
+    $stmt->execute();
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    exit;
+}
+
+// ========== BENUTZER AKTUALISIEREN ==========
+if ($action === 'updateUser') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
         exit;
     }
 
-    // Pflichtfelder prüfen
-    $required = ['name', 'description', 'price', 'category', 'origin_country', 'stock'];
-    foreach ($required as $field) {
-        if (empty($_POST[$field])) {
-            echo json_encode(['success' => false, 'message' => "Pflichtfeld '$field' fehlt."]);
-            exit;
+    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Nur Admins dürfen Benutzer bearbeiten.']);
+        exit;
+    }
+
+    $data = json_decode(file_get_contents("php://input"), true);
+    if (!$data || !isset($data['id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Ungültige Benutzerdaten.']);
+        exit;
+    }
+
+    $fields = ["username", "email", "password", "firstname", "lastname", "street", "housenumber", "postalcode", "city", "iban", "cardnumber", "bankname", "role"];
+    $updates = [];
+    $values = [];
+
+    foreach ($fields as $field) {
+        if (isset($data[$field])) {
+            $updates[] = "$field = ?";
+            $values[] = $field === "password" ? password_hash($data[$field], PASSWORD_DEFAULT) : $data[$field];
         }
     }
 
-    // Bild prüfen
-    if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-        echo json_encode(['success' => false, 'message' => 'Bild-Upload fehlgeschlagen.']);
-        exit;
+    if (count($updates) > 0) {
+        $values[] = $data['id'];
+        $sql = "UPDATE users SET " . implode(", ", $updates) . " WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($values);
     }
 
-    // Bild speichern
-    $imageName = basename($_FILES['image']['name']);
-    $uploadDir = '../productpictures/';
-    $uploadPath = $uploadDir . $imageName;
-
-    if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
-        echo json_encode(['success' => false, 'message' => 'Bild konnte nicht gespeichert werden.']);
-        exit;
-    }
-
-    // Produkt in die Datenbank einfügen
-    $stmt = $conn->prepare("INSERT INTO products (name, description, price, image, category, origin_country, stock, created_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->execute([
-        $_POST['name'],
-        $_POST['description'],
-        $_POST['price'],
-        $imageName,
-        $_POST['category'],
-        $_POST['origin_country'],
-        $_POST['stock']
-    ]);
-
-    echo json_encode(['success' => true, 'message' => 'Produkt gespeichert.']);
+    echo json_encode(['success' => true, 'message' => 'Benutzerdaten aktualisiert.']);
     exit;
 }
 
-// ======== 5) Benutzerprofil abrufen ==========
-if ($action === 'getProfile') {
-    if (!isset($_SESSION['user'])) {
-        http_response_code(401); // Nicht eingeloggt
-        echo json_encode(['error' => 'Nicht eingeloggt']);
+// ========== BENUTZER LÖSCHEN ==========
+if ($action === 'deleteUser') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Nur DELETE erlaubt.']);
         exit;
     }
 
-    // Gibt gespeicherte Nutzerdaten aus der Session zurück
-    $user = $_SESSION['user'];
-    echo json_encode([
-        'id' => $user['id'],
-        'username' => $user['username'],
-        'firstname' => $user['firstname'],
-        'lastname' => $user['lastname'],
-        'email' => $user['email'],
-        'street' => $user['street'],
-        'housenumber' => $user['housenumber'],
-        'postalcode' => $user['postalcode'],
-        'city' => $user['city'],
-        'iban' => $user['iban'] ?? '',
-        'cardnumber' => $user['cardnumber'] ?? '',
-        'bankname' => $user['bankname'] ?? '',
-        'role' => $user['role']
-    ]);
-    exit;
-}
-
-// ======== 6) Existenz von Benutzern prüfen (für Registrierung) ==========
-if ($action === 'checkUserExists') {
-    $username = $_GET['username'] ?? '';
-    $email = $_GET['email'] ?? '';
-
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
-    $stmt->execute([$username, $email]);
-    $user = $stmt->fetch();
-
-    echo json_encode([
-        'usernameTaken' => $user && $user['username'] === $username,
-        'emailTaken' => $user && $user['email'] === $email
-    ]);
-    exit;
-}
-
-// ======== 7) Benutzerliste abrufen (nur Admins) ==========
-if ($action === 'getUsers') {
     if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
         http_response_code(403);
-        echo json_encode(['error' => 'Nicht erlaubt']);
+        echo json_encode(['success' => false, 'message' => 'Keine Admin-Berechtigung.']);
+        exit;
+    }
+
+    $userId = $_GET['id'] ?? null;
+    if (!$userId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Benutzer-ID fehlt.']);
         exit;
     }
 
     try {
-        $stmt = $conn->prepare("SELECT id, username, email, firstname, lastname, role FROM users");
-        $stmt->execute();
-        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        echo json_encode(['success' => true, 'message' => 'Benutzer erfolgreich gelöscht.']);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['error' => 'Fehler beim Laden der Benutzer: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Fehler beim Löschen: ' . $e->getMessage()]);
     }
     exit;
 }
 
-// ======== 8) Bestellung absenden ==========
-if ($action === 'placeOrder') {
-    // Nur POST erlaubt
+// ========== BESTELLUNGEN LADEN (ADMIN) ==========
+if ($action === 'getOrders') {
+    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Nur Admins dürfen Bestellungen sehen.']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT * FROM orders");
+    $stmt->execute();
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    exit;
+}
+
+// ========== BESTELLSTATUS BEARBEITEN ==========
+if ($action === 'editOrder') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
         exit;
     }
 
-    // Nur eingeloggte Nutzer dürfen bestellen
+    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Nur Admins dürfen Bestellungen bearbeiten.']);
+        exit;
+    }
+
+    $orderId = $_POST['order_id'] ?? null;
+    $status = $_POST['status'] ?? null;
+
+    if (!$orderId || !$status) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Bestell-ID oder Status fehlt.']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+    $stmt->execute([$status, $orderId]);
+
+    echo json_encode(['success' => true, 'message' => 'Status aktualisiert.']);
+    exit;
+}
+
+// ========== BESTELLUNG LÖSCHEN ==========
+if ($action === 'deleteOrder') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Nur DELETE erlaubt.']);
+        exit;
+    }
+
+    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Nur Admins dürfen Bestellungen löschen.']);
+        exit;
+    }
+
+    $orderId = $_GET['id'] ?? null;
+    if (!$orderId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Bestell-ID fehlt.']);
+        exit;
+    }
+
+    try {
+        $conn->prepare("DELETE FROM order_items WHERE order_id = ?")->execute([$orderId]);
+        $conn->prepare("DELETE FROM orders WHERE id = ?")->execute([$orderId]);
+        echo json_encode(['success' => true, 'message' => 'Bestellung gelöscht.']);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Fehler beim Löschen: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+// ========== BESTELLUNG ABSCHICKEN ==========
+if ($action === 'placeOrder') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
+        exit;
+    }
+
     if (!isset($_SESSION['user'])) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'Nicht eingeloggt.']);
         exit;
     }
 
-    // Daten aus dem POST-Request holen
-    $street = $_POST['street'] ?? '';
-    $housenumber = $_POST['housenumber'] ?? '';
-    $postalcode = $_POST['postalcode'] ?? '';
-    $city = $_POST['city'] ?? '';
-    $paymentMethod = $_POST['payment_method'] ?? '';
-    $cartJson = $_POST['cart'] ?? '';
-
-    // Pflichtfelder prüfen
-    if (!$street || !$housenumber || !$postalcode || !$city || !$paymentMethod || !$cartJson) {
-        echo json_encode(['success' => false, 'message' => 'Fehlende Bestelldaten.']);
+    $cart = json_decode($_POST['cart'] ?? '', true);
+    if (!is_array($cart) || count($cart) === 0) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Ungültiger Warenkorb.']);
         exit;
     }
 
-    // Warenkorb-Daten in Array umwandeln
-    $cart = json_decode($cartJson, true);
-    if (!is_array($cart) || count($cart) === 0) {
-        echo json_encode(['success' => false, 'message' => 'Warenkorb ist leer oder ungültig.']);
-        exit;
+    $requiredFields = ['street', 'housenumber', 'postalcode', 'city', 'payment_method'];
+    foreach ($requiredFields as $field) {
+        if (empty($_POST[$field])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => "Feld '$field' fehlt."]);
+            exit;
+        }
     }
 
     $userId = $_SESSION['user']['id'];
 
     try {
-        // Bestellung speichern
-        $stmt = $conn->prepare("INSERT INTO orders (user_id, street, housenumber, postalcode, city, payment_method, order_date, status)
-                                VALUES (?, ?, ?, ?, ?, ?, NOW(), 'offen')");
-        $stmt->execute([$userId, $street, $housenumber, $postalcode, $city, $paymentMethod]);
+        $stmt = $conn->prepare("INSERT INTO orders (user_id, street, housenumber, postalcode, city, payment_method, created_at, status) VALUES (?, ?, ?, ?, ?, ?, NOW(), 'offen')");
+        $stmt->execute([
+            $userId,
+            $_POST['street'],
+            $_POST['housenumber'],
+            $_POST['postalcode'],
+            $_POST['city'],
+            $_POST['payment_method']
+        ]);
 
-        $orderId = $conn->lastInsertId(); // ID der Bestellung
+        $orderId = $conn->lastInsertId();
 
-        // Bestellpositionen speichern
         foreach ($cart as $item) {
-            $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price)
-                                    VALUES (?, ?, ?, ?)");
-            $stmt->execute([$orderId, $item['id'], $item['quantity'], $item['price']]);
+            $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)")
+                ->execute([$orderId, $item['id'], $item['quantity'], $item['price']]);
         }
 
-        echo json_encode(['success' => true, 'message' => 'Bestellung gespeichert.', 'orderId' => $orderId]);
+        http_response_code(201);
+        echo json_encode(['success' => true, 'message' => 'Bestellung erfolgreich gespeichert.', 'orderId' => $orderId]);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Fehler: ' . $e->getMessage()]);
     }
     exit;
 }
 
-// ======== Wenn keine bekannte Aktion erkannt wurde ==========
+// ========== EIGENE BESTELLUNGEN LADEN ==========
+if ($action === 'getMyOrders') {
+    if (!isset($_SESSION['user'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Nicht eingeloggt.']);
+        exit;
+    }
+
+    $userId = $_SESSION['user']['id'];
+
+    $stmt = $conn->prepare("
+        SELECT 
+            o.id,
+            o.created_at AS order_date,
+            o.status,
+            (
+                SELECT SUM(oi.price * oi.quantity)
+                FROM order_items oi
+                WHERE oi.order_id = o.id
+            ) AS total_price
+        FROM orders o
+        WHERE o.user_id = ?
+        ORDER BY o.created_at DESC
+    ");
+    $stmt->execute([$userId]);
+
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    exit;
+}
+
+// ========== UNBEKANNTE AKTION ==========
 http_response_code(400);
-echo json_encode(["error" => "Ungültige Anfrage – keine passende Aktion gefunden."]);
+echo json_encode(['success' => false, 'message' => 'Ungültige Aktion.']);
 exit;

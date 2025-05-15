@@ -9,35 +9,30 @@
 </head>
 
 <body>
-
-    <!-- ============ HEADER ============ -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
         <nav>
             <ul>
-                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
-                <li><a href="cart.html">Warenkorb</a></li>s
+                <li><a href="cart.html">Warenkorb</a></li>
                 <li><a href="profil.html">Mein Profil</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ============ PRODUKTDETAILBEREICH ============ -->
     <main>
         <div class="product-detail" id="productContainer">
-            <!-- Produktdaten werden hier dynamisch geladen -->
+            <p>🔄 Produkt wird geladen...</p>
         </div>
-
         <a href="products.html" class="back-link">← Zurück zur Übersicht</a>
     </main>
 
-    <!-- ============ FUSSZEILE ============ -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -48,33 +43,44 @@
         </div>
     </footer>
 
-    <!-- ============ JAVASCRIPT ============ -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get("id");
 
             if (!productId) {
-                document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
+                showError("❌ Kein Produkt ausgewählt.");
                 return;
             }
 
-            fetch(`../../Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
+            fetch(`/Snackery/Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
                     credentials: "include"
                 })
-                .then(response => response.json())
-                .then(product => {
-                    if (!product || !product.id) {
-                        document.getElementById("productContainer").innerHTML = "<h2>❌ Produkt nicht gefunden.</h2>";
+                .then(response =>
+                    response.json().then(json => ({
+                        status: response.status,
+                        body: json
+                    }))
+                )
+                .then(result => {
+                    if (result.status !== 200 || !result.body || !result.body.id) {
+                        showError("❌ Produkt nicht gefunden.");
                         return;
                     }
 
-                    document.getElementById("productContainer").innerHTML = `
-                        <img src="../../Backend/productpictures/${product.image}" alt="${product.name}">
+                    const product = result.body;
+                    const container = document.getElementById("productContainer");
+                    const priceFormatted = parseFloat(product.price).toFixed(2).replace(".", ",");
+
+                    container.innerHTML = `
+                        <img src="../../Backend/productpictures/${product.image}" 
+                             alt="${product.name}" 
+                             style="max-width: 300px;" 
+                             onerror="this.src='../res/img/fallback.jpg';">
                         <div class="product-info">
                             <h2>${product.name}</h2>
                             <p>${product.description}</p>
-                            <p class="price">€ ${parseFloat(product.price).toFixed(2)}</p>
+                            <p class="price">€ ${priceFormatted}</p>
                             <p><strong>Kategorie:</strong> ${product.category}</p>
                             <p><strong>Herkunftsland:</strong> ${product.origin_country}</p>
                             <p><strong>Verfügbar:</strong> ${product.stock} Stück</p>
@@ -88,14 +94,39 @@
                 })
                 .catch(error => {
                     console.error("❌ Fehler beim Laden des Produkts:", error);
-                    document.getElementById("productContainer").innerHTML = "<h2>⚠️ Fehler beim Laden des Produkts.</h2>";
+                    showError("⚠️ Serverfehler – Produkt konnte nicht geladen werden.");
                 });
+
+            // ✅ Logout-Button
+            const logoutBtn = document.getElementById("logoutBtn");
+            logoutBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                fetch("/Snackery/Backend/logout.php", {
+                        credentials: "include"
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = "index.html";
+                        } else {
+                            alert("❌ Fehler beim Logout.");
+                        }
+                    })
+                    .catch(() => {
+                        alert("❌ Serverfehler beim Logout.");
+                    });
+            });
         });
+
+        function showError(message) {
+            const container = document.getElementById("productContainer");
+            container.innerHTML = `<h2>${message}</h2>`;
+        }
 
         function addToCart(product) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
             const existing = cart.find(item => item.id == product.id);
+
             if (existing) {
                 existing.quantity += 1;
             } else {
@@ -111,7 +142,6 @@
             alert("✅ Produkt wurde zum Warenkorb hinzugefügt!");
         }
     </script>
-
 </body>
 
 </html>

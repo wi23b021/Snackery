@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Meine Bestellungen – Snackery</title>
+    <link rel="stylesheet" href="../res/css/style.css">
+    <script src="../js/session-check.js" defer></script>
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => {
+            // ===== Prüfen ob eingeloggt =====
+            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProfile", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(user => {
+                    if (!user || !user.id) {
+                        window.location.href = "login.html";
+                    } else {
+                        loadOrders();
+                    }
+                })
+                .catch(() => {
+                    window.location.href = "login.html";
+                });
+
+            // ===== Bestellungen laden =====
+            function loadOrders() {
+                fetch("/Snackery/Backend/logic/requestHandler.php?action=getMyOrders", {
+                        credentials: "include"
+                    })
+                    .then(async res => {
+                        const text = await res.text(); // <-- rohen Text abfangen
+                        console.log("🔍 Serverantwort (roh):", text); // DEBUG: rohes JSON anzeigen
+
+                        let data;
+                        try {
+                            data = JSON.parse(text); // versuche es zu parsen
+                        } catch (e) {
+                            throw new Error("❌ Fehler beim Parsen der Antwort: " + e.message);
+                        }
+
+                        const container = document.getElementById("orderList");
+
+                        if (!Array.isArray(data) || data.length === 0) {
+                            container.innerHTML = "<p>❌ Du hast noch keine Bestellungen aufgegeben.</p>";
+                            return;
+                        }
+
+                        const rows = data.map(order => `
+                            <tr>
+                                <td>${order.id}</td>
+                                <td>${order.order_date}</td>
+                                <td>${order.status}</td>
+                                <td>${parseFloat(order.total_price).toFixed(2)} €</td>
+                            </tr>
+                        `).join("");
+
+                        container.innerHTML = `
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Bestellnummer</th>
+                                        <th>Datum</th>
+                                        <th>Status</th>
+                                        <th>Gesamtsumme</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        `;
+                    })
+                    .catch(error => {
+                        console.error("❌ Fehler beim Laden der Bestellungen:", error); // KONSOLE
+                        document.getElementById("orderList").innerHTML = "<p>❌ Fehler beim Laden der Bestellungen.</p>";
+                    });
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <!-- === HEADER === -->
+    <header>
+        <div class="logo">
+            <a href="index.html">
+                <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Startseite</a></li>
+                <li><a href="products.html">Produkte</a></li>
+                <li><a href="cart.html">Warenkorb</a></li>
+                <li><a href="profil.html">Mein Profil</a></li>
+                <li><a href="my_orders.html">Meine Bestellungen</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+
+            </ul>
+        </nav>
+    </header>
+
+    <!-- === INHALT === -->
+    <main class="admin-container">
+        <h2>Meine Bestellungen</h2>
+        <div id="orderList">
+            <p>🔄 Lade deine Bestellungen...</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Snackery</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="hilfe.html">Hilfe</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
