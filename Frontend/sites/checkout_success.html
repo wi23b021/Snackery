@@ -1,47 +1,58 @@
 <!DOCTYPE html>
+<!-- HTML5-Dokumenttypdeklaration -->
 <html lang="de">
+<!-- Die Sprache der Seite ist Deutsch -->
 
 <head>
     <meta charset="UTF-8">
+    <!-- Zeichencodierung UTF-8, damit Umlaute und Sonderzeichen korrekt dargestellt werden -->
+
     <title>Bestellung erfolgreich – Snackery</title>
+    <!-- Titel der Seite, der im Browser-Tab erscheint -->
 
-    <!-- Stylesheet für das Design -->
+    <!-- ======= CSS EINBINDEN ======= -->
     <link rel="stylesheet" href="../res/css/style.css">
+    <!-- Zentrales Stylesheet für Farben, Layout, Schrift etc. -->
 
-    <!-- Session-Überprüfung -->
-    <script src="../res/js/session-check.js"></script>
+    <!-- ======= SESSION-PRÜFUNG ======= -->
+    <script src="../res/js/session-check.js" defer></script>
 </head>
 
 <body>
 
-    <!-- ========== KOPFBEREICH ========== -->
+    <!-- ========== KOPFBEREICH MIT LOGO UND NAVIGATION ========== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
         <nav>
             <ul>
-                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
                 <li><a href="profil.html">Mein Profil</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="my_orders.html" id="myOrdersLink" style="display: none;">Meine Bestellungen</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ========== HAUPTINHALT: BESTELLBESTÄTIGUNG ========== -->
     <main class="register-container" style="text-align: center; margin-top: 50px;">
         <h1>✅ Vielen Dank für deine Bestellung!</h1>
         <p>Wir haben deine Bestellung erhalten und bearbeiten sie schnellstmöglich.</p>
 
-        <a class="btn" href="/Snackery/index.html" style="display: inline-block; margin-top: 30px;">Zurück zur Startseite</a>
+        <a class="btn" href="index.html" style="display: inline-block; margin-top: 30px;">
+            Zurück zur Startseite
+        </a>
+        <br><br>
+        <a class="btn" href="my_orders.html" id="myOrdersButton" style="display: none;">🧾 Meine Bestellungen ansehen</a>
     </main>
 
-    <!-- ========== FUßBEREICH ========== -->
+    <!-- ========== FUSSZEILE ========== -->
     <footer style="text-align: center; margin-top: 50px;">
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -52,6 +63,47 @@
         </div>
     </footer>
 
+    <!-- ========== LOGOUT-SKRIPT ========== -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const logoutBtn = document.getElementById("logoutBtn");
+            const myOrdersLink = document.getElementById("myOrdersLink");
+            const myOrdersButton = document.getElementById("myOrdersButton");
+
+            // Logout
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    fetch("/Snackery/Backend/logout.php", {
+                            credentials: "include"
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = "index.html";
+                            } else {
+                                alert("❌ Logout fehlgeschlagen.");
+                            }
+                        })
+                        .catch(() => {
+                            alert("❌ Serverfehler beim Logout.");
+                        });
+                });
+            }
+
+            // Sichtbarkeit von "Meine Bestellungen"
+            fetch("/Snackery/Backend/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        if (myOrdersLink) myOrdersLink.style.display = "inline";
+                        if (myOrdersButton) myOrdersButton.style.display = "inline-block";
+                    }
+                });
+        });
+    </script>
 </body>
 
 </html>

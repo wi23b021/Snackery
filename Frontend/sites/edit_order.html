@@ -6,33 +6,53 @@
     <title>Bestellung bearbeiten – Snackery</title>
     <link rel="stylesheet" href="../res/css/style.css">
     <script src="../res/js/session-check.js" defer></script>
+
+    <script defer>
+        document.addEventListener("DOMContentLoaded", function() {
+            const logoutBtn = document.getElementById("logoutBtn");
+
+            logoutBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                fetch("/Snackery/Backend/logout.php", {
+                        credentials: "include"
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = "index.html";
+                        } else {
+                            alert("❌ Logout fehlgeschlagen.");
+                        }
+                    })
+                    .catch(() => {
+                        alert("❌ Serverfehler beim Logout.");
+                    });
+            });
+        });
+    </script>
 </head>
 
 <body>
 
-    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigation -->
         <nav>
             <ul>
                 <li><a href="admin.html">Adminbereich</a></li>
                 <li><a href="admin_orders.html">Zurück zu Bestellungen</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ==================== BESTELLUNG BEARBEITEN ==================== -->
     <main class="register-container">
         <h2>Bestellung bearbeiten</h2>
 
-        <!-- Formular zur Bearbeitung -->
         <form id="editOrderForm">
             <label for="orderId">Bestell-ID:</label>
             <input type="number" id="orderId" name="order_id" required>
@@ -48,26 +68,27 @@
             <button type="submit">Änderung speichern</button>
         </form>
 
-        <!-- Bereich für Erfolg oder Fehler -->
         <p id="feedback" style="margin-top: 20px; font-weight: bold;"></p>
     </main>
 
-    <!-- ==================== JAVASCRIPT ==================== -->
     <script>
         document.getElementById("editOrderForm").addEventListener("submit", function(e) {
-            e.preventDefault(); // ❌ Seitenneuladen verhindern
+            e.preventDefault();
 
             const formData = new FormData(this);
 
-            fetch("../../Backend/logic/requestHandler.php?action=editOrder", {
+            fetch("/Snackery/Backend/logic/requestHandler.php?action=editOrder", {
                     method: "POST",
                     body: formData,
-                    credentials: "include" // ✅ Session-Cookie mitsenden
+                    credentials: "include"
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error("Fehlerhafte Serverantwort");
+                    return response.json();
+                })
                 .then(data => {
                     const feedback = document.getElementById("feedback");
-                    feedback.textContent = data.message || "Änderung gespeichert.";
+                    feedback.textContent = data.message || "✅ Änderung erfolgreich gespeichert.";
                     feedback.style.color = data.success ? "green" : "red";
                 })
                 .catch(error => {

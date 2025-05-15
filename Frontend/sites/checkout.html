@@ -1,36 +1,48 @@
 <!DOCTYPE html>
+<!-- HTML5-Dokumentdeklaration -->
 <html lang="de">
+<!-- Sprache der Seite: Deutsch -->
 
 <head>
     <meta charset="UTF-8">
-    <title>Checkout – Snackery</title>
+    <!-- Zeichencodierung für Umlaute, Sonderzeichen etc. -->
 
+    <title>Checkout – Snackery</title>
+    <!-- Browser-Titel -->
+
+    <!-- ======= STYLESHEET ======= -->
     <link rel="stylesheet" href="../res/css/style.css">
+    <!-- Zentrales CSS für Design & Layout -->
+
+    <!-- ======= SESSION-CHECK ======= -->
     <script src="../res/js/session-check.js" defer></script>
+    <!-- Externes JS prüft, ob der Benutzer eingeloggt ist ("defer" wartet auf komplettes HTML) -->
 </head>
 
 <body>
 
-    <!-- ========== HEADER ========== -->
+    <!-- ========== HEADER MIT NAVIGATION ========== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
+        <!-- Navigation für eingeloggte Benutzer -->
         <nav>
             <ul>
-                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
                 <li><a href="profil.html">Mein Profil</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="my_orders.html" id="myOrdersLink" style="display: none;">Meine Bestellungen</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- ========== HAUPTBEREICH ========== -->
+    <!-- ========== HAUPTINHALT: CHECKOUT FORMULAR ========== -->
     <main style="padding: 40px;">
         <h1 style="text-align: center;">🛒 Checkout</h1>
 
@@ -51,8 +63,8 @@
                 <h3>🧾 Erlagschein-Vorschau:</h3>
                 <p>Empfänger: Snackery e.U.</p>
                 <p>IBAN: AT12 3456 7890 1234 5678</p>
-                <p>Betrag: kann man im kommenden Abschnitt "Bestellübersicht" sehen</p>
-                <p>Nach Zahlungserhalt, bekommen Sie die Bestellung innerhalb von 7 Tagen !</p>
+                <p>Betrag: siehe Bestellübersicht unten</p>
+                <p>Lieferung erfolgt nach Zahlungseingang (ca. 7 Tage)</p>
             </div>
 
             <h2>Bestellübersicht</h2>
@@ -65,7 +77,7 @@
         <p id="feedbackMessage" style="margin-top:20px; font-weight: bold;"></p>
     </main>
 
-    <!-- ========== FOOTER ========== -->
+    <!-- ========== FUSSZEILE ========== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -76,6 +88,7 @@
         </div>
     </footer>
 
+    <!-- ========== JAVASCRIPT ========== -->
     <script>
         let cart = [];
 
@@ -93,12 +106,10 @@
             }
 
             let total = 0;
-
             cart.forEach(item => {
                 const div = document.createElement("div");
                 div.innerHTML = `<p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>`;
                 summary.appendChild(div);
-
                 total += item.price * item.quantity;
             });
 
@@ -106,8 +117,8 @@
         }
 
         document.getElementById("paymentMethod").addEventListener("change", (e) => {
-            const preview = document.getElementById("erlagscheinPreview");
-            preview.style.display = e.target.value === "erlagschein" ? "block" : "none";
+            document.getElementById("erlagscheinPreview").style.display =
+                e.target.value === "erlagschein" ? "block" : "none";
         });
 
         document.getElementById("checkoutForm").addEventListener("submit", function(e) {
@@ -121,27 +132,62 @@
             const formData = new FormData(this);
             formData.append("cart", JSON.stringify(cart));
 
-            fetch("../../Backend/logic/requestHandler.php?action=placeOrder", {
+            fetch("/Snackery/Backend/logic/requestHandler.php?action=placeOrder", {
                     method: "POST",
                     body: formData,
                     credentials: "include"
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        localStorage.removeItem("cart");
-                        window.location.href = "checkout_success.html";
-                    } else {
-                        document.getElementById("feedbackMessage").textContent = "❌ Fehler: " + (data.message || "Unbekannter Fehler");
-                    }
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || "Unbekannter Fehler");
+                    return data;
                 })
-                .catch(error => {
-                    console.error("Fehler:", error);
-                    document.getElementById("feedbackMessage").textContent = "❌ Serverfehler beim Abschicken.";
+                .then(data => {
+                    localStorage.removeItem("cart");
+                    window.location.href = "checkout_success.html";
+                })
+                .catch(err => {
+                    console.error("❌ Fehler:", err);
+                    document.getElementById("feedbackMessage").textContent = "❌ " + err.message;
                 });
         });
 
-        window.addEventListener("DOMContentLoaded", loadCart);
+        document.addEventListener("DOMContentLoaded", function() {
+            loadCart();
+
+            // Logout
+            const logoutBtn = document.getElementById("logoutBtn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    fetch("/Snackery/Backend/logout.php", {
+                            credentials: "include"
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = "index.html";
+                            } else {
+                                alert("❌ Logout fehlgeschlagen.");
+                            }
+                        })
+                        .catch(() => {
+                            alert("❌ Serverfehler beim Logout.");
+                        });
+                });
+            }
+
+            // Meine Bestellungen sichtbar machen wenn eingeloggt
+            fetch("/Snackery/Backend/sessionStatus.php", {
+                    credentials: "include"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        document.getElementById("myOrdersLink").style.display = "inline";
+                    }
+                });
+        });
     </script>
 
 </body>

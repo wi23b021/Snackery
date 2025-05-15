@@ -4,31 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin – Bestellungen verwalten</title>
-
     <link rel="stylesheet" href="../res/css/style.css">
 
     <script defer>
         document.addEventListener("DOMContentLoaded", () => {
-            // ✅ Prüfen, ob der Benutzer ein eingeloggter Admin ist
-            fetch("../../Backend/logic/requestHandler.php?action=getProfile", {
+            // === ADMINPRÜFUNG ===
+            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProfile", {
                     credentials: "include"
                 })
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(user => {
                     if (!user || user.role !== "admin") {
                         window.location.href = "login.html";
                     }
                 })
-                .catch(error => {
-                    console.error("Fehler beim Session-Check:", error);
+                .catch(() => {
                     window.location.href = "login.html";
                 });
 
-            // ✅ Bestellungen laden
-            fetch("../../Backend/logic/requestHandler.php?action=getOrders", {
+            // === BESTELLUNGEN LADEN ===
+            fetch("/Snackery/Backend/logic/requestHandler.php?action=getOrders", {
                     credentials: "include"
                 })
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(orders => {
                     const container = document.getElementById("orderTableContainer");
 
@@ -37,36 +35,85 @@
                         return;
                     }
 
-                    let tableHTML = `
-                    <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
-                        <thead style="background-color: #f5f5f5;">
-                            <tr>
-                                <th>Bestell-ID</th>
-                                <th>Benutzer-ID</th>
-                                <th>Datum</th>
-                                <th>Status</th>
-                                <th>Aktion</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                    orders.forEach(order => {
-                        tableHTML += `
+                    const rows = orders.map(order => `
                         <tr>
                             <td>${order.id}</td>
                             <td>${order.user_id}</td>
                             <td>${order.order_date}</td>
-                            <td>${order.status}</td>
-                            <td><a class="btn" href="edit_order.html?id=${order.id}">Bearbeiten</a></td>
-                        </tr>`;
+                            <td>
+                                <select class="statusSelect" data-id="${order.id}">
+                                    <option value="offen" ${order.status === "offen" ? "selected" : ""}>offen</option>
+                                    <option value="in Bearbeitung" ${order.status === "in Bearbeitung" ? "selected" : ""}>in Bearbeitung</option>
+                                    <option value="auf dem Weg" ${order.status === "auf dem Weg" ? "selected" : ""}>auf dem Weg</option>
+                                    <option value="geliefert" ${order.status === "geliefert" ? "selected" : ""}>geliefert</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn deleteOrderBtn" data-id="${order.id}">🗑️ Löschen</button>
+                            </td>
+                        </tr>
+                    `).join("");
+
+                    container.innerHTML = `
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Bestell-ID</th>
+                                    <th>Benutzer-ID</th>
+                                    <th>Datum</th>
+                                    <th>Status</th>
+                                    <th>Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    `;
+
+                    // === STATUS ÄNDERN ===
+                    document.querySelectorAll(".statusSelect").forEach(select => {
+                        select.addEventListener("change", function() {
+                            const orderId = this.dataset.id;
+                            const newStatus = this.value;
+
+                            fetch("/Snackery/Backend/logic/requestHandler.php?action=editOrder", {
+                                    method: "POST",
+                                    credentials: "include",
+                                    headers: {
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: `order_id=${orderId}&status=${encodeURIComponent(newStatus)}`
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    alert(data.success ? "✅ Status aktualisiert." : "❌ Fehler beim Aktualisieren.");
+                                })
+                                .catch(() => alert("❌ Fehler beim Senden der Statusänderung."));
+                        });
                     });
 
-                    tableHTML += "</tbody></table>";
-                    container.innerHTML = tableHTML;
+                    // === BESTELLUNG LÖSCHEN ===
+                    document.querySelectorAll(".deleteOrderBtn").forEach(btn => {
+                        btn.addEventListener("click", function() {
+                            const orderId = this.dataset.id;
+                            if (confirm("❗ Bestellung wirklich löschen?")) {
+                                fetch(`/Snackery/Backend/logic/requestHandler.php?action=deleteOrder&id=${orderId}`, {
+                                        method: "DELETE",
+                                        credentials: "include"
+                                    })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        alert(data.success ? "✅ Bestellung gelöscht." : "❌ Fehler beim Löschen.");
+                                        if (data.success) location.reload();
+                                    })
+                                    .catch(() => alert("❌ Fehler beim Löschen der Bestellung."));
+                            }
+                        });
+                    });
                 })
                 .catch(error => {
                     console.error("❌ Fehler beim Laden der Bestellungen:", error);
-                    document.getElementById("orderTableContainer").innerHTML = "<p>❌ Fehler beim Laden der Daten.</p>";
+                    document.getElementById("orderTableContainer").innerHTML =
+                        "<p>❌ Fehler beim Laden der Daten.</p>";
                 });
         });
     </script>
@@ -74,15 +121,16 @@
 
 <body>
 
+    <!-- === HEADER === -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
         <nav>
             <ul>
-                <li><a href="/Snackery/index.html">Startseite</a></li>
+                <li><a href="index.html">Startseite</a></li>
                 <li><a href="admin_products.html">Produkte</a></li>
                 <li><a href="admin_orders.html">Bestellungen</a></li>
                 <li><a href="admin_users.html">Benutzer</a></li>
@@ -91,6 +139,7 @@
         </nav>
     </header>
 
+    <!-- === INHALT === -->
     <main style="padding: 40px;">
         <h2>Bestellungen verwalten</h2>
         <div id="orderTableContainer">
@@ -98,6 +147,7 @@
         </div>
     </main>
 
+    <!-- === FUSSZEILE === -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>

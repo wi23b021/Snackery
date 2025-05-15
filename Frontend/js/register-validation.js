@@ -1,43 +1,55 @@
-// 
-// Snackery – JavaScript zur Formularvalidierung bei der Registrierung
-// Technologien: JavaScript (DOM-Handling, Fetch API)
-//
+// ==============================================
+// register-validation.js
+// Snackery – Formularvalidierung für Registrierung
+// ==============================================
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // Zugriff auf das Registrierungsformular
     const form = document.getElementById("registerForm");
+
+    // Eingabefelder erfassen
     const usernameInput = form.querySelector("input[name='username']");
     const emailInput = form.querySelector("input[name='email']");
     const password = form.querySelector("input[name='password']");
     const passwordRepeat = form.querySelector("input[name='password_repeat']");
 
+    // Funktion: Fehlermeldung unter einem Eingabefeld anzeigen
     const createError = (input, message) => {
-        const oldError = input.nextElementSibling;
-        if (oldError && oldError.classList.contains("error-message")) {
-            oldError.remove();
+        const existingError = input.nextElementSibling;
+        if (existingError && existingError.classList.contains("error-message")) {
+            existingError.remove();
         }
 
         const error = document.createElement("div");
         error.className = "error-message";
+        error.style.color = "red";
+        error.style.fontSize = "0.9em";
         error.textContent = message;
         input.insertAdjacentElement("afterend", error);
     };
 
+    // Funktion: Fehlermeldung entfernen
     const clearError = (input) => {
-        const oldError = input.nextElementSibling;
-        if (oldError && oldError.classList.contains("error-message")) {
-            oldError.remove();
+        const existingError = input.nextElementSibling;
+        if (existingError && existingError.classList.contains("error-message")) {
+            existingError.remove();
         }
     };
 
+    // Funktion: Live-Check ob Benutzername oder E-Mail bereits vergeben ist
     const checkAvailability = () => {
         const username = usernameInput.value.trim();
         const email = emailInput.value.trim();
 
         if (username && email) {
-            fetch(`../../Backend/logic/requestHandler.php?action=checkUserExists&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`, {
+            fetch(`/Snackery/Backend/logic/requestHandler.php?action=checkUserExists&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`, {
                     credentials: "include"
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error("Netzwerkfehler");
+                    return res.json();
+                })
                 .then(data => {
                     if (data.usernameTaken) {
                         createError(usernameInput, "❌ Benutzername ist bereits vergeben.");
@@ -51,20 +63,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         clearError(emailInput);
                     }
                 })
-                .catch(error => {
-                    console.error("Fehler beim Verfügbarkeitscheck:", error);
+                .catch(err => {
+                    console.error("❌ Fehler beim Verfügbarkeitscheck:", err);
                 });
         }
     };
 
+    // Live-Überprüfung bei Eingabe
     usernameInput.addEventListener("input", checkAvailability);
     emailInput.addEventListener("input", checkAvailability);
 
+    // Formularvalidierung beim Absenden
     form.addEventListener("submit", (e) => {
         const errors = form.querySelectorAll(".error-message");
         if (errors.length > 0) {
             e.preventDefault();
-            alert("Bitte behebe zuerst die rot markierten Fehler.");
+            alert("❗ Bitte behebe zuerst die markierten Fehler.");
             return;
         }
 

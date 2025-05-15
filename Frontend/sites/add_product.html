@@ -4,15 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Neues Produkt hinzufügen – Snackery</title>
-
-    <!-- Verknüpfung mit dem globalen Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
 
-    <!-- Sessionprüfung -->
     <script defer>
         document.addEventListener("DOMContentLoaded", () => {
-            // Prüfe ob der Benutzer ein Admin ist
-            fetch("../../Backend/logic/requestHandler.php?action=getProfile", {
+            // ========== ADMINZUGANG PRÜFEN ==========
+            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProfile", {
                     credentials: "include"
                 })
                 .then(res => res.json())
@@ -22,21 +19,51 @@
                     }
                 })
                 .catch(() => window.location.href = "login.html");
+
+            // ========== PRODUKTFORMULAR HANDHABEN ==========
+            const form = document.getElementById("productForm");
+            const message = document.getElementById("message");
+
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+
+                fetch("/Snackery/Backend/logic/requestHandler.php?action=addProduct", {
+                        method: "POST",
+                        body: formData,
+                        credentials: "include"
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            message.textContent = "✅ Produkt erfolgreich gespeichert!";
+                            message.style.color = "green";
+                            form.reset();
+                        } else {
+                            message.textContent = "❌ Fehler: " + (data.message || "Produkt konnte nicht gespeichert werden.");
+                            message.style.color = "red";
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Fehler:", err);
+                        message.textContent = "❌ Serverfehler – bitte später erneut versuchen.";
+                        message.style.color = "red";
+                    });
+            });
         });
     </script>
 </head>
 
 <body>
 
-    <!-- ==================== HEADER ==================== -->
     <header>
         <div class="logo">
-            <a href="/Snackery/index.html">
+            <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
-        <!-- Navigation für Admins -->
         <nav>
             <ul>
                 <li><a href="admin.html">Adminbereich</a></li>
@@ -46,11 +73,9 @@
         </nav>
     </header>
 
-    <!-- ==================== PRODUKTHINZUFÜGUNG ==================== -->
     <main class="admin-container">
         <h2>Neues Produkt hinzufügen</h2>
 
-        <!-- Formular zum Hochladen eines neuen Produkts -->
         <form id="productForm" enctype="multipart/form-data">
             <input type="text" name="name" placeholder="Produktname" required>
             <textarea name="description" placeholder="Produktbeschreibung" required></textarea>
@@ -59,15 +84,12 @@
             <input type="text" name="category" placeholder="Kategorie" required>
             <input type="text" name="origin_country" placeholder="Herkunftsland" required>
             <input type="number" name="stock" placeholder="Lagerbestand" required>
-
             <button type="submit">Produkt speichern</button>
         </form>
 
-        <!-- Platz für Erfolgs- oder Fehlermeldungen -->
         <p id="message"></p>
     </main>
 
-    <!-- ==================== FOOTER ==================== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -77,41 +99,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- ==================== JAVASCRIPT: PRODUKT SPEICHERN ==================== -->
-    <script>
-        const form = document.getElementById("productForm");
-        const message = document.getElementById("message");
-
-        // ✅ Formular absenden
-        form.addEventListener("submit", function(event) {
-            event.preventDefault(); // Kein Neuladen der Seite
-
-            const formData = new FormData(form);
-
-            fetch("../../Backend/logic/requestHandler.php?action=addProduct", {
-                    method: "POST",
-                    body: formData,
-                    credentials: "include" // Session-Cookie mitsenden
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        message.textContent = "✅ Produkt erfolgreich gespeichert!";
-                        message.style.color = "green";
-                        form.reset(); // Formular zurücksetzen
-                    } else {
-                        message.textContent = "❌ Fehler: " + (data.message || "Produkt konnte nicht gespeichert werden.");
-                        message.style.color = "red";
-                    }
-                })
-                .catch(error => {
-                    console.error("Fehler beim Speichern des Produkts:", error);
-                    message.textContent = "❌ Ein unerwarteter Fehler ist aufgetreten.";
-                    message.style.color = "red";
-                });
-        });
-    </script>
 
 </body>
 
