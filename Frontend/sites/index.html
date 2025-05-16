@@ -5,59 +5,8 @@
     <meta charset="UTF-8">
     <title>Snackery – Internationale Snacks</title>
     <link rel="stylesheet" href="../res/css/style.css">
-    <script defer>
-        document.addEventListener("DOMContentLoaded", function() {
-            const loginLink = document.getElementById("loginLink");
-            const registerLink = document.getElementById("registerLink");
-            const profileLink = document.getElementById("profileLink");
-            const logoutBtn = document.getElementById("logoutBtn");
-            const myOrdersLink = document.getElementById("myOrdersLink");
-
-            fetch("/Snackery/Backend/sessionStatus.php", {
-                    credentials: "include"
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error("HTTP-Fehler");
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.loggedIn) {
-                        loginLink.style.display = "none";
-                        registerLink.style.display = "none";
-                        profileLink.style.display = "inline";
-                        logoutBtn.style.display = "inline";
-                        myOrdersLink.style.display = "inline";
-                    } else {
-                        loginLink.style.display = "inline";
-                        registerLink.style.display = "inline";
-                        profileLink.style.display = "none";
-                        logoutBtn.style.display = "none";
-                        myOrdersLink.style.display = "none";
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ Fehler bei der Session-Überprüfung:", error);
-                });
-
-            logoutBtn.addEventListener("click", function(e) {
-                e.preventDefault();
-                fetch("/Snackery/Backend/logout.php", {
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = "index.html";
-                        } else {
-                            alert("❌ Fehler beim Logout.");
-                        }
-                    })
-                    .catch(() => {
-                        alert("❌ Serverfehler beim Logout.");
-                    });
-            });
-        });
-    </script>
+    <script src="../js/session-check.js" defer></script>
+    <!-- ✅ zentrale Session-Prüfung -->
 </head>
 
 <body>

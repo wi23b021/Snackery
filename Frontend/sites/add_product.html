@@ -51,6 +51,28 @@
                         message.style.color = "red";
                     });
             });
+
+            // ========== LOGOUT-FETCH EINBAU ==========
+            const logoutBtn = document.getElementById("logoutBtn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    fetch("/Snackery/Backend/logout.php", {
+                            credentials: "include"
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = "index.html";
+                            } else {
+                                alert("❌ Fehler beim Logout.");
+                            }
+                        })
+                        .catch(() => {
+                            alert("❌ Serverfehler beim Logout.");
+                        });
+                });
+            }
         });
     </script>
 </head>
@@ -68,7 +90,7 @@
             <ul>
                 <li><a href="admin.html">Adminbereich</a></li>
                 <li><a href="admin_products.html">Produkte verwalten</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>

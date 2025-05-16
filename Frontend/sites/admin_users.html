@@ -102,6 +102,12 @@
                                 </select>
                             </td>
                             <td>
+                                <select class="input-active">
+                                    <option value="1" ${user.active == 1 ? "selected" : ""}>aktiv</option>
+                                    <option value="0" ${user.active == 0 ? "selected" : ""}>inaktiv</option>
+                                </select>
+                            </td>
+                            <td>
                                 <div class="action-btns">
                                     <button class="saveUserBtn" data-user-id="${user.id}">💾</button>
                                     <button class="deleteUserBtn" data-user-id="${user.id}">🗑️</button>
@@ -127,6 +133,7 @@
                                     <th>Kartennr.</th>
                                     <th>Bank</th>
                                     <th>Rolle</th>
+                                    <th>Status</th>
                                     <th>Aktionen</th>
                                 </tr>
                             </thead>
@@ -152,9 +159,11 @@
                                 iban: row.querySelector(".input-iban").value,
                                 cardnumber: row.querySelector(".input-cardnumber").value,
                                 bankname: row.querySelector(".input-bankname").value,
-                                role: row.querySelector(".input-role").value
+                                role: row.querySelector(".input-role").value,
+                                active: parseInt(row.querySelector(".input-active").value)
                             };
 
+                            // Update Benutzerdaten (außer active)
                             fetch("/Snackery/Backend/logic/requestHandler.php?action=updateUser", {
                                     method: "POST",
                                     headers: {
@@ -166,6 +175,19 @@
                                 .then(res => res.json())
                                 .then(data => {
                                     alert(data.success ? "✅ Benutzer erfolgreich aktualisiert!" : "❌ Fehler: " + data.message);
+
+                                    // Jetzt zusätzlich Aktiv-Status separat speichern
+                                    fetch("/Snackery/Backend/logic/requestHandler.php?action=toggleUserActive", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json"
+                                        },
+                                        credentials: "include",
+                                        body: JSON.stringify({
+                                            id: userId,
+                                            active: userData.active
+                                        })
+                                    });
                                 })
                                 .catch(err => {
                                     console.error(err);

@@ -5,58 +5,8 @@
     <meta charset="UTF-8">
     <title>Hilfe – Snackery</title>
     <link rel="stylesheet" href="../res/css/style.css">
-
-    <script defer>
-        document.addEventListener("DOMContentLoaded", function() {
-            const loginLink = document.getElementById("loginLink");
-            const registerLink = document.getElementById("registerLink");
-            const profileLink = document.getElementById("profileLink");
-            const logoutBtn = document.getElementById("logoutBtn");
-
-            fetch("/Snackery/Backend/sessionStatus.php", {
-                    credentials: "include"
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error("HTTP-Fehler bei sessionStatus.php");
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.loggedIn) {
-                        loginLink.style.display = "none";
-                        registerLink.style.display = "none";
-                        profileLink.style.display = "inline";
-                        logoutBtn.style.display = "inline";
-                    } else {
-                        loginLink.style.display = "inline";
-                        registerLink.style.display = "inline";
-                        profileLink.style.display = "none";
-                        logoutBtn.style.display = "none";
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ Fehler bei der Session-Überprüfung:", error);
-                });
-
-            logoutBtn.addEventListener("click", function(e) {
-                e.preventDefault();
-
-                fetch("/Snackery/Backend/logout.php", {
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = "index.html";
-                        } else {
-                            alert("❌ Fehler beim Logout.");
-                        }
-                    })
-                    .catch(() => {
-                        alert("❌ Serverfehler beim Logout.");
-                    });
-            });
-        });
-    </script>
+    <script src="../js/session-check.js" defer></script>
+    <!-- ✅ Session-Check zentral eingebunden -->
 </head>
 
 <body>
@@ -77,6 +27,7 @@
                 <li><a href="profil.html" id="profileLink" style="display: none;">Mein Profil</a></li>
                 <li><a href="login.html" id="loginLink">Login</a></li>
                 <li><a href="register.html" id="registerLink">Registrieren</a></li>
+                <li><a href="my_orders.html" id="myOrdersLink" style="display: none;">Meine Bestellungen</a></li>
                 <li><a href="#" id="logoutBtn" style="display: none;">Logout</a></li>
             </ul>
         </nav>

@@ -5,59 +5,7 @@
     <meta charset="UTF-8">
     <title>Impressum & AGB – Snackery</title>
     <link rel="stylesheet" href="../res/css/style.css">
-
-    <script defer>
-        document.addEventListener("DOMContentLoaded", function() {
-            const loginLink = document.getElementById("loginLink");
-            const registerLink = document.getElementById("registerLink");
-            const profileLink = document.getElementById("profileLink");
-            const logoutBtn = document.getElementById("logoutBtn");
-
-            fetch("/Snackery/Backend/sessionStatus.php", {
-                    credentials: "include"
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error("HTTP-Fehler");
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.loggedIn) {
-                        loginLink.style.display = "none";
-                        registerLink.style.display = "none";
-                        profileLink.style.display = "inline";
-                        logoutBtn.style.display = "inline";
-                    } else {
-                        loginLink.style.display = "inline";
-                        registerLink.style.display = "inline";
-                        profileLink.style.display = "none";
-                        logoutBtn.style.display = "none";
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ Fehler bei der Session-Überprüfung:", error);
-                });
-
-            // Logout per fetch
-            logoutBtn.addEventListener("click", function(e) {
-                e.preventDefault();
-
-                fetch("/Snackery/Backend/logout.php", {
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = "index.html";
-                        } else {
-                            alert("❌ Fehler beim Logout.");
-                        }
-                    })
-                    .catch(() => {
-                        alert("❌ Serverfehler beim Logout.");
-                    });
-            });
-        });
-    </script>
+    <script src="../js/session-check.js" defer></script>
 </head>
 
 <body>
@@ -93,8 +41,7 @@
         </p>
 
         <p><strong>Vertreten durch:</strong> Serdar Toluay, Ersan Kavak und Abdullah Kilicoglu</p>
-        <p><strong>Kontakt:</strong><br> Telefon: +43 660 123 4567<br> E-Mail: office@snackery.at
-        </p>
+        <p><strong>Kontakt:</strong><br> Telefon: +43 660 123 4567<br> E-Mail: office@snackery.at</p>
 
         <p><strong>Firmenbuchnummer:</strong> FN 123456a<br>
             <strong>Firmenbuchgericht:</strong> Handelsgericht Wien
@@ -102,7 +49,8 @@
 
         <p><strong>Umsatzsteuer-ID:</strong> ATU12345678</p>
         <p><strong>Mitglied bei:</strong> Wirtschaftskammer Wien</p>
-        <p><strong>Berufsrechtliche Vorschriften:</strong> Gewerbeordnung<br> (einsehbar unter <a href="https://www.ris.bka.gv.at" target="_blank">www.ris.bka.gv.at</a>)
+        <p><strong>Berufsrechtliche Vorschriften:</strong> Gewerbeordnung<br> (einsehbar unter
+            <a href="https://www.ris.bka.gv.at" target="_blank">www.ris.bka.gv.at</a>)
         </p>
 
         <hr>
