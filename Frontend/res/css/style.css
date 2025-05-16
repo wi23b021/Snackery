@@ -445,3 +445,52 @@ main h2 {
 .back-link:hover {
     text-decoration: underline;
 }
+
+
+/* ==================== Sortier-Dropdown visuell anpassen ==================== */
+
+.filter-section select#sortFilter {
+    min-width: 200px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    font-weight: 500;
+    color: #333;
+}
+
+
+/* Optional: Pfeilsymbol für Sortierung schöner darstellen (nur bei Bedarf) */
+
+.filter-section select#sortFilter:focus {
+    border-color: #ff6f61;
+    box-shadow: 0 0 6px rgba(255, 111, 97, 0.2);
+}
+
+.cart-item .quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.cart-item .quantity-controls button {
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    background-color: #ff6f61;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cart-item .quantity-controls button:hover {
+    background-color: #e85b50;
+}
+
+.cart-item .quantity-controls span {
+    min-width: 20px;
+    display: inline-block;
+    text-align: center;
+    font-weight: bold;
+}

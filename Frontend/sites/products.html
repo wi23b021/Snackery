@@ -31,12 +31,19 @@
         <h2>Unsere Snacks</h2>
 
         <section class="filter-section">
-            <input type="text" id="searchInput" placeholder="🔍 Nach Produkt suchen...">
+            <input type="text" id="searchInput" placeholder="🔍 Nach Name suchen...">
             <select id="categoryFilter">
                 <option value="">Alle Kategorien</option>
                 <option value="Snack">Snack</option>
                 <option value="Sweet">Sweet</option>
                 <option value="Salty & Spicy">Salty & Spicy</option>
+            </select>
+            <select id="sortFilter">
+                <option value="">Sortieren nach</option>
+                <option value="name-asc">Name (A–Z)</option>
+                <option value="name-desc">Name (Z–A)</option>
+                <option value="price-asc">Preis (aufsteigend)</option>
+                <option value="price-desc">Preis (absteigend)</option>
             </select>
         </section>
 
@@ -56,51 +63,36 @@
     </footer>
 
     <script>
-        // === Session Check für "Meine Bestellungen" ===
+        let allProducts = [];
+
         document.addEventListener("DOMContentLoaded", function() {
             fetch("/Snackery/Backend/sessionStatus.php", {
                     credentials: "include"
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.loggedIn) {
-                        document.getElementById("myOrdersLink").style.display = "inline";
-                    } else {
-                        document.getElementById("myOrdersLink").style.display = "none";
-                    }
+                    document.getElementById("myOrdersLink").style.display = data.loggedIn ? "inline" : "none";
+                });
+
+            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProducts", {
+                    credentials: "include"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    allProducts = data;
+                    renderProducts(allProducts);
                 })
                 .catch(() => {
-                    document.getElementById("myOrdersLink").style.display = "none";
+                    showError("❌ Produkte konnten nicht geladen werden.");
                 });
+
+            document.getElementById("searchInput").addEventListener("input", applyFilters);
+            document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+            document.getElementById("sortFilter").addEventListener("change", applyFilters);
         });
 
-        let allProducts = [];
-
-        fetch("/Snackery/Backend/logic/requestHandler.php?action=getProducts", {
-                credentials: "include"
-            })
-            .then(response =>
-                response.json().then(json => ({
-                    status: response.status,
-                    body: json
-                }))
-            )
-            .then(result => {
-                if (result.status === 200 && Array.isArray(result.body)) {
-                    allProducts = result.body;
-                    renderProducts(allProducts);
-                } else {
-                    showError("❌ Produkte konnten nicht geladen werden.");
-                }
-            })
-            .catch(error => {
-                console.error("❌ Fehler beim Laden der Produkte:", error);
-                showError("❌ Serverfehler – Produkte konnten nicht geladen werden.");
-            });
-
         function showError(msg) {
-            const grid = document.getElementById("productGrid");
-            grid.innerHTML = `<p>${msg}</p>`;
+            document.getElementById("productGrid").innerHTML = `<p>${msg}</p>`;
         }
 
         function renderProducts(products) {
@@ -115,9 +107,7 @@
             products.forEach(product => {
                 const card = document.createElement("div");
                 card.className = "product-card";
-
                 const priceFormatted = parseFloat(product.price).toFixed(2).replace(".", ",");
-
                 card.innerHTML = `
                     <a href="product_detail.html?id=${product.id}">
                         <img src="../../Backend/productpictures/${product.image}" 
@@ -134,17 +124,25 @@
         function applyFilters() {
             const search = document.getElementById("searchInput").value.toLowerCase();
             const category = document.getElementById("categoryFilter").value;
+            const sort = document.getElementById("sortFilter").value;
 
-            const filtered = allProducts.filter(p =>
+            let filtered = allProducts.filter(p =>
                 p.name.toLowerCase().includes(search) &&
                 (category === "" || p.category === category)
             );
 
+            if (sort === "name-asc") {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sort === "name-desc") {
+                filtered.sort((a, b) => b.name.localeCompare(a.name));
+            } else if (sort === "price-asc") {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sort === "price-desc") {
+                filtered.sort((a, b) => b.price - a.price);
+            }
+
             renderProducts(filtered);
         }
-
-        document.getElementById("searchInput").addEventListener("input", applyFilters);
-        document.getElementById("categoryFilter").addEventListener("change", applyFilters);
 
         document.getElementById("logoutBtn").addEventListener("click", function(e) {
             e.preventDefault();
