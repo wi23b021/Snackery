@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../res/css/style.css">
     <script defer>
         document.addEventListener("DOMContentLoaded", function() {
-
             fetch("/Snackery/Backend/sessionStatus.php", {
                     credentials: "include"
                 })
@@ -27,7 +26,6 @@
 
                 const formData = new FormData(form);
                 const data = {};
-
                 formData.forEach((value, key) => {
                     data[key] = value.trim();
                 });
@@ -59,6 +57,38 @@
                         errorBox.textContent = "Server nicht erreichbar.";
                         errorBox.style.color = "red";
                     });
+
+                // Passwort-Feld-Validierung
+                const password = document.getElementById("password").value;
+                const repeat = document.getElementById("password_repeat").value;
+                if (password !== repeat) {
+                    errorBox.textContent = "Passwörter stimmen nicht überein.";
+                    errorBox.style.color = "red";
+                    return;
+                }
+            });
+
+            // Passwortstärke live prüfen
+            const passwordInput = document.getElementById("password");
+            const pwStrength = document.getElementById("pwStrength");
+
+            passwordInput.addEventListener("input", () => {
+                const pw = passwordInput.value;
+
+                const isLongEnough = pw.length >= 8;
+                const hasNumber = /\d/.test(pw);
+                const hasUpper = /[A-Z]/.test(pw);
+                const hasSpecial = /[\W]/.test(pw);
+
+                if (pw.length === 0) {
+                    pwStrength.textContent = "";
+                } else if (isLongEnough && hasNumber && hasUpper && hasSpecial) {
+                    pwStrength.style.color = "green";
+                    pwStrength.textContent = "✅ Starkes Passwort";
+                } else {
+                    pwStrength.style.color = "darkorange";
+                    pwStrength.textContent = "⚠️ Mind. 8 Zeichen, Großbuchstabe, Zahl & Sonderzeichen";
+                }
             });
         });
     </script>
@@ -95,8 +125,9 @@
                 <input type="text" name="housenumber" placeholder="Hausnummer" required>
                 <input type="text" name="postalcode" placeholder="PLZ" required>
                 <input type="text" name="city" placeholder="Ort" required>
-                <input type="password" name="password" placeholder="Passwort" required>
-                <input type="password" name="password_repeat" placeholder="Passwort wiederholen" required>
+                <input type="password" name="password" id="password" placeholder="Passwort" required>
+                <div id="pwStrength" style="font-size: 0.9em; margin-bottom: 10px;"></div>
+                <input type="password" name="password_repeat" id="password_repeat" placeholder="Passwort wiederholen" required>
                 <button type="submit">Registrieren</button>
             </form>
         </div>

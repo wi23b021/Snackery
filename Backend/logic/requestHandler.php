@@ -146,6 +146,41 @@ if ($action === 'updateUser') {
     echo json_encode(['success' => true, 'message' => 'Benutzerdaten aktualisiert.']);
     exit;
 }
+// ========== BENUTZER AKTIV / INAKTIV SETZEN ==========
+if ($action === 'toggleUserActive') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
+        exit;
+    }
+
+    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Keine Admin-Berechtigung.']);
+        exit;
+    }
+
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    if (!isset($data['id']) || !isset($data['active'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Benutzer-ID oder Aktiv-Status fehlt.']);
+        exit;
+    }
+
+    $userId = $data['id'];
+    $isActive = $data['active'] ? 1 : 0;
+
+    try {
+        $stmt = $conn->prepare("UPDATE users SET active = ? WHERE id = ?");
+        $stmt->execute([$isActive, $userId]);
+        echo json_encode(['success' => true, 'message' => 'Status erfolgreich geändert.']);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Fehler: ' . $e->getMessage()]);
+    }
+    exit;
+}
 
 // ========== BENUTZER LÖSCHEN ==========
 if ($action === 'deleteUser') {
