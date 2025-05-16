@@ -115,6 +115,25 @@
                     document.getElementById("orderTableContainer").innerHTML =
                         "<p>❌ Fehler beim Laden der Daten.</p>";
                 });
+
+            // === ✅ LOGOUT FUNKTION ===
+            document.getElementById("logoutBtn").addEventListener("click", function(e) {
+                e.preventDefault();
+                fetch("/Snackery/Backend/logout.php", {
+                        credentials: "include"
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = "index.html";
+                        } else {
+                            alert("❌ Logout fehlgeschlagen.");
+                        }
+                    })
+                    .catch(() => {
+                        alert("❌ Serverfehler beim Logout.");
+                    });
+            });
         });
     </script>
 </head>
@@ -134,7 +153,7 @@
                 <li><a href="admin_products.html">Produkte</a></li>
                 <li><a href="admin_orders.html">Bestellungen</a></li>
                 <li><a href="admin_users.html">Benutzer</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>

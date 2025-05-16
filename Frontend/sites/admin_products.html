@@ -93,6 +93,25 @@
                     document.getElementById("productTableContainer").innerHTML =
                         "<p>❌ Fehler beim Laden der Produkte.</p>";
                 });
+
+            // ✅ LOGOUT PER FETCH
+            document.getElementById("logoutBtn").addEventListener("click", function(e) {
+                e.preventDefault();
+                fetch("/Snackery/Backend/logout.php", {
+                        credentials: "include"
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = "index.html";
+                        } else {
+                            alert("❌ Logout fehlgeschlagen.");
+                        }
+                    })
+                    .catch(() => {
+                        alert("❌ Serverfehler beim Logout.");
+                    });
+            });
         });
     </script>
 </head>
@@ -110,7 +129,7 @@
             <ul>
                 <li><a href="index.html">Startseite</a></li>
                 <li><a href="admin.html">Adminbereich</a></li>
-                <li><a href="../../Backend/logout.php">Logout</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </nav>
     </header>

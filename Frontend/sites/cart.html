@@ -9,15 +9,12 @@
 </head>
 
 <body>
-
-    <!-- ========== HEADER MIT NAVIGATION ========== -->
     <header>
         <div class="logo">
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
-
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -30,18 +27,14 @@
         </nav>
     </header>
 
-    <!-- ========== HAUPTINHALT ========== -->
     <main style="text-align: center; padding: 50px;">
         <h1>🛒 Dein Warenkorb</h1>
-
         <div id="cartItems"></div>
         <h3 id="totalPrice">Gesamt: € 0.00</h3>
-
         <a href="checkout.html" class="btn">Zur Kasse</a>
         <button id="clearCartBtn">Warenkorb leeren</button>
     </main>
 
-    <!-- ========== FUSSZEILE ========== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -52,7 +45,6 @@
         </div>
     </footer>
 
-    <!-- ========== JS ========== -->
     <script>
         function loadCart() {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -60,7 +52,6 @@
             const totalDisplay = document.getElementById("totalPrice");
 
             container.innerHTML = "";
-
             if (cart.length === 0) {
                 container.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
                 totalDisplay.textContent = "Gesamt: € 0.00";
@@ -69,11 +60,15 @@
 
             let total = 0;
 
-            cart.forEach(item => {
+            cart.forEach((item, index) => {
                 const div = document.createElement("div");
                 div.className = "cart-item";
                 div.innerHTML = `
-                    <p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>
+                    <p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} 
+                    <button onclick="updateQuantity(${item.id}, -1)">-</button>
+                    <strong>${item.quantity}</strong>
+                    <button onclick="updateQuantity(${item.id}, 1)">+</button>
+                    </p>
                     <button onclick="removeFromCart(${item.id})">🗑️ Entfernen</button>
                 `;
                 container.appendChild(div);
@@ -81,6 +76,21 @@
             });
 
             totalDisplay.textContent = `Gesamt: € ${total.toFixed(2)}`;
+        }
+
+        function updateQuantity(productId, change) {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const item = cart.find(p => p.id === productId);
+            if (!item) return;
+
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                const index = cart.findIndex(p => p.id === productId);
+                cart.splice(index, 1);
+            }
+
+            localStorage.setItem("cart", JSON.stringify(cart));
+            loadCart();
         }
 
         function removeFromCart(productId) {
@@ -116,7 +126,6 @@
                 });
         });
 
-        // Neue Prüfung für "Meine Bestellungen"
         document.addEventListener("DOMContentLoaded", () => {
             loadCart();
 
@@ -136,7 +145,6 @@
                 });
         });
     </script>
-
 </body>
 
 </html>

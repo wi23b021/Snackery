@@ -56,19 +56,13 @@
             fetch(`/Snackery/Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
                     credentials: "include"
                 })
-                .then(response =>
-                    response.json().then(json => ({
-                        status: response.status,
-                        body: json
-                    }))
-                )
-                .then(result => {
-                    if (result.status !== 200 || !result.body || !result.body.id) {
+                .then(response => response.json())
+                .then(product => {
+                    if (!product || !product.id) {
                         showError("❌ Produkt nicht gefunden.");
                         return;
                     }
 
-                    const product = result.body;
                     const container = document.getElementById("productContainer");
                     const priceFormatted = parseFloat(product.price).toFixed(2).replace(".", ",");
 
@@ -88,8 +82,10 @@
                         </div>
                     `;
 
+                    // In den Warenkorb Button
                     document.getElementById("addToCartBtn").addEventListener("click", () => {
                         addToCart(product);
+                        sendToBackend(product);
                     });
                 })
                 .catch(error => {
@@ -97,9 +93,8 @@
                     showError("⚠️ Serverfehler – Produkt konnte nicht geladen werden.");
                 });
 
-            // ✅ Logout-Button
-            const logoutBtn = document.getElementById("logoutBtn");
-            logoutBtn.addEventListener("click", function(e) {
+            // Logout-Button
+            document.getElementById("logoutBtn").addEventListener("click", function(e) {
                 e.preventDefault();
                 fetch("/Snackery/Backend/logout.php", {
                         credentials: "include"
@@ -119,8 +114,7 @@
         });
 
         function showError(message) {
-            const container = document.getElementById("productContainer");
-            container.innerHTML = `<h2>${message}</h2>`;
+            document.getElementById("productContainer").innerHTML = `<h2>${message}</h2>`;
         }
 
         function addToCart(product) {
@@ -139,7 +133,32 @@
             }
 
             localStorage.setItem("cart", JSON.stringify(cart));
-            alert("✅ Produkt wurde zum Warenkorb hinzugefügt!");
+            alert("✅ Produkt wurde lokal zum Warenkorb hinzugefügt!");
+        }
+
+        function sendToBackend(product) {
+            fetch("/Snackery/Backend/addToCart.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        quantity: 1
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert("⚠️ Backend konnte das Produkt nicht speichern.");
+                    }
+                })
+                .catch(() => {
+                    alert("❌ Fehler beim Senden an das Backend.");
+                });
         }
     </script>
 </body>
