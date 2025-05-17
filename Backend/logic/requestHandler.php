@@ -378,6 +378,71 @@ if ($action === 'getMyOrders') {
     echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
     exit;
 }
+// ========== RECHNUNGSDATEN LADEN ==========
+if ($action === 'getInvoiceData') {
+    if (!isset($_SESSION['user'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Nicht eingeloggt.']);
+        exit;
+    }
+
+    $userId = $_SESSION['user']['id'];
+    $orderId = $_GET['orderId'] ?? null;
+
+    if (!$orderId || !is_numeric($orderId)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Ungültige Bestell-ID.']);
+        exit;
+    }
+
+    try {
+        // Nutzerinformationen
+        $userStmt = $conn->prepare("SELECT firstname, lastname, street, housenumber, postalcode, city FROM users WHERE id = ?");
+        $userStmt->execute([$userId]);
+        $userData = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+        // Bestelldaten inkl. Besitzüberprüfung
+        $orderStmt = $conn->prepare("SELECT created_at FROM orders WHERE id = ? AND user_id = ?");
+        $orderStmt->execute([$orderId, $userId]);
+        $orderData = $orderStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$userData || !$orderData) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Benutzer oder Bestellung nicht gefunden.']);
+            exit;
+        }
+
+        // Bestellpositionen
+        $itemsStmt = $conn->prepare("
+            SELECT p.name, oi.quantity, oi.price
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?
+        ");
+        $itemsStmt->execute([$orderId]);
+        $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($items)) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Keine Bestellpositionen gefunden.']);
+            exit;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'user' => $userData,
+            'order' => $orderData,
+            'items' => $items
+        ]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Serverfehler: ' . $e->getMessage()
+        ]);
+    }
+    exit;
+}
 
 // ========== UNBEKANNTE AKTION ==========
 http_response_code(400);
