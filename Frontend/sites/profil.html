@@ -4,108 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Profil bearbeiten – Snackery</title>
+
+    <!-- 🎨 Zentrales CSS für Layout & Design -->
     <link rel="stylesheet" href="../res/css/style.css">
-    <script src="../../js/session-check.js" defer></script>
 
-    <script defer>
-        document.addEventListener("DOMContentLoaded", () => {
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProfile", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(user => {
-                    if (!user || !user.id) {
-                        window.location.href = "login.html";
-                        return;
-                    }
-
-                    for (const field in user) {
-                        const input = document.querySelector(`[name="${field}"]`);
-                        if (input) input.value = user[field];
-                    }
-
-                    if (user.role === "admin") {
-                        document.getElementById("adminLink").style.display = "inline";
-                    }
-
-                    // ✅ "Meine Bestellungen" anzeigen
-                    document.getElementById("myOrdersLink").style.display = "inline";
-                })
-                .catch(() => {
-                    alert("Fehler beim Laden des Profils");
-                    window.location.href = "login.html";
-                });
-
-            document.getElementById("profileForm").addEventListener("submit", (e) => {
-                e.preventDefault();
-
-                const form = e.target;
-                const formData = new FormData(form);
-                const data = {};
-
-                formData.forEach((value, key) => {
-                    data[key] = value.trim();
-                });
-
-                fetch("/Snackery/Backend/logic/requestHandler.php?action=updateProfile", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(data),
-                        credentials: "include"
-                    })
-                    .then(response =>
-                        response.json().then(json => ({
-                            status: response.status,
-                            body: json
-                        }))
-                    )
-                    .then(result => {
-                        const msg = result.body.message || "Unbekannter Fehler.";
-                        if (result.status === 200) {
-                            alert("✅ Profil erfolgreich gespeichert: " + msg);
-                        } else {
-                            alert("❌ Fehler: " + msg);
-                        }
-                    })
-                    .catch(() => {
-                        alert("❌ Serverfehler beim Speichern.");
-                    });
-            });
-
-            // ✅ Logout aktivieren
-            const logoutBtn = document.getElementById("logoutBtn");
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    fetch("/Snackery/Backend/logout.php", {
-                            credentials: "include"
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = "index.html";
-                            } else {
-                                alert("Fehler beim Logout.");
-                            }
-                        })
-                        .catch(() => {
-                            alert("❌ Serverfehler beim Logout.");
-                        });
-                });
-            }
-        });
-    </script>
+    <!-- 🧠 Session-Check & Profil-Logik -->
+    <script src="../js/session-check.js" defer></script>
+    <script src="../js/profil.js" defer></script>
 </head>
 
 <body>
+
+    <!-- 🔝 Kopfbereich: Logo & Navigation -->
     <header>
         <div class="logo">
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -119,28 +36,37 @@
         </nav>
     </header>
 
+    <!-- 🧾 Hauptinhalt: Profilformular -->
     <main>
         <div class="profile-container">
             <h2>Profil bearbeiten</h2>
+
+            <!-- 🔐 Profilformular mit Adress- und Zahlungsdaten -->
             <form id="profileForm">
                 <input type="text" name="firstname" placeholder="Vorname" required>
                 <input type="text" name="lastname" placeholder="Nachname" required>
                 <input type="email" name="email" placeholder="E-Mail" required>
+
                 <input type="text" name="street" placeholder="Straße" required>
                 <input type="text" name="housenumber" placeholder="Hausnummer" required>
                 <input type="text" name="postalcode" placeholder="PLZ" required>
                 <input type="text" name="city" placeholder="Ort" required>
+
                 <input type="text" name="iban" placeholder="IBAN">
                 <input type="text" name="cardnumber" placeholder="Kartennummer">
                 <input type="text" name="bankname" placeholder="Bankname">
+
+                <!-- 🔑 Passwortfelder: Pflicht für Änderung -->
                 <input type="password" name="current_password" placeholder="Aktuelles Passwort" required>
                 <input type="password" name="new_password" placeholder="Neues Passwort (optional)">
                 <input type="password" name="new_password_repeat" placeholder="Neues Passwort wiederholen">
+
                 <button type="submit">Profil aktualisieren</button>
             </form>
         </div>
     </main>
 
+    <!-- 🔚 Fußbereich -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -150,6 +76,7 @@
             </div>
         </div>
     </footer>
+
 </body>
 
 </html>

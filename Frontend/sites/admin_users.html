@@ -4,250 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin – Benutzerverwaltung</title>
+
+    <!-- Zentrales Stylesheet für Design und Layout -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- Session-Check stellt sicher, dass nur eingeloggte Admins Zugriff haben -->
     <script src="../js/session-check.js" defer></script>
-    <style>
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-            font-size: 15px;
-        }
-        
-        .admin-table th,
-        .admin-table td {
-            padding: 12px;
-            text-align: center;
-            vertical-align: middle;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .admin-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        .admin-table input,
-        .admin-table select {
-            width: 100%;
-            padding: 6px 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        
-        .action-btns {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .action-btns button {
-            padding: 6px 10px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            color: white;
-            background-color: #ff6a5c;
-            transition: background-color 0.2s ease;
-        }
-        
-        .action-btns button:hover {
-            background-color: #e55549;
-        }
-    </style>
-    <script defer>
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProfile", {
-                    credentials: "include"
-                })
-                .then(response => response.json())
-                .then(user => {
-                    if (!user || user.role !== "admin") {
-                        window.location.href = "login.html";
-                    }
-                })
-                .catch(() => window.location.href = "login.html");
 
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=getUsers", {
-                    credentials: "include"
-                })
-                .then(response => response.json())
-                .then(users => {
-                    const container = document.getElementById("userTableContainer");
-
-                    if (!Array.isArray(users) || users.length === 0) {
-                        container.innerHTML = "<p>❌ Keine Benutzer gefunden.</p>";
-                        return;
-                    }
-
-                    const rows = users.map(user => `
-                        <tr data-user-id="${user.id}">
-                            <td>${user.id}</td>
-                            <td><input class="input-username" value="${user.username}" /></td>
-                            <td><input class="input-email" value="${user.email}" /></td>
-                            <td><input class="input-firstname" value="${user.firstname}" /></td>
-                            <td><input class="input-lastname" value="${user.lastname}" /></td>
-                            <td><input class="input-street" value="${user.street}" /></td>
-                            <td><input class="input-housenumber" value="${user.housenumber}" /></td>
-                            <td><input class="input-postalcode" value="${user.postalcode}" /></td>
-                            <td><input class="input-city" value="${user.city}" /></td>
-                            <td><input class="input-iban" value="${user.iban || ''}" /></td>
-                            <td><input class="input-cardnumber" value="${user.cardnumber || ''}" /></td>
-                            <td><input class="input-bankname" value="${user.bankname || ''}" /></td>
-                            <td>
-                                <select class="input-role">
-                                    <option value="user" ${user.role === "user" ? "selected" : ""}>User</option>
-                                    <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select class="input-active">
-                                    <option value="1" ${user.active == 1 ? "selected" : ""}>aktiv</option>
-                                    <option value="0" ${user.active == 0 ? "selected" : ""}>inaktiv</option>
-                                </select>
-                            </td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="saveUserBtn" data-user-id="${user.id}">💾</button>
-                                    <button class="deleteUserBtn" data-user-id="${user.id}">🗑️</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join("");
-
-                    container.innerHTML = `
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Benutzername</th>
-                                    <th>E-Mail</th>
-                                    <th>Vorname</th>
-                                    <th>Nachname</th>
-                                    <th>Straße</th>
-                                    <th>Hausnr.</th>
-                                    <th>PLZ</th>
-                                    <th>Ort</th>
-                                    <th>IBAN</th>
-                                    <th>Kartennr.</th>
-                                    <th>Bank</th>
-                                    <th>Rolle</th>
-                                    <th>Status</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    `;
-
-                    document.querySelectorAll(".saveUserBtn").forEach(button => {
-                        button.addEventListener("click", () => {
-                            const userId = button.dataset.userId;
-                            const row = document.querySelector(`tr[data-user-id='${userId}']`);
-
-                            const userData = {
-                                id: userId,
-                                username: row.querySelector(".input-username").value,
-                                email: row.querySelector(".input-email").value,
-                                firstname: row.querySelector(".input-firstname").value,
-                                lastname: row.querySelector(".input-lastname").value,
-                                street: row.querySelector(".input-street").value,
-                                housenumber: row.querySelector(".input-housenumber").value,
-                                postalcode: row.querySelector(".input-postalcode").value,
-                                city: row.querySelector(".input-city").value,
-                                iban: row.querySelector(".input-iban").value,
-                                cardnumber: row.querySelector(".input-cardnumber").value,
-                                bankname: row.querySelector(".input-bankname").value,
-                                role: row.querySelector(".input-role").value,
-                                active: parseInt(row.querySelector(".input-active").value)
-                            };
-
-                            // Update Benutzerdaten (außer active)
-                            fetch("/Snackery/Backend/logic/requestHandler.php?action=updateUser", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json"
-                                    },
-                                    credentials: "include",
-                                    body: JSON.stringify(userData)
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    alert(data.success ? "✅ Benutzer erfolgreich aktualisiert!" : "❌ Fehler: " + data.message);
-
-                                    // Jetzt zusätzlich Aktiv-Status separat speichern
-                                    fetch("/Snackery/Backend/logic/requestHandler.php?action=toggleUserActive", {
-                                        method: "POST",
-                                        headers: {
-                                            "Content-Type": "application/json"
-                                        },
-                                        credentials: "include",
-                                        body: JSON.stringify({
-                                            id: userId,
-                                            active: userData.active
-                                        })
-                                    });
-                                })
-                                .catch(err => {
-                                    console.error(err);
-                                    alert("❌ Serverfehler beim Speichern.");
-                                });
-                        });
-                    });
-
-                    document.querySelectorAll(".deleteUserBtn").forEach(button => {
-                        button.addEventListener("click", () => {
-                            const userId = button.dataset.userId;
-                            if (confirm("❗ Willst du diesen Benutzer wirklich löschen?")) {
-                                fetch(`/Snackery/Backend/logic/requestHandler.php?action=deleteUser&id=${userId}`, {
-                                        method: "DELETE",
-                                        credentials: "include"
-                                    })
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        if (data.success) {
-                                            alert("✅ Benutzer gelöscht.");
-                                            window.location.reload();
-                                        } else {
-                                            alert("❌ Fehler: " + data.message);
-                                        }
-                                    })
-                                    .catch(() => alert("❌ Serverfehler beim Löschen."));
-                            }
-                        });
-                    });
-                })
-                .catch(() => {
-                    document.getElementById("userTableContainer").innerHTML = "<p>❌ Fehler beim Laden der Benutzerliste.</p>";
-                });
-
-            document.getElementById("logoutBtn").addEventListener("click", function(e) {
-                e.preventDefault();
-                fetch("/Snackery/Backend/logout.php", {
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = "index.html";
-                        } else {
-                            alert("❌ Logout fehlgeschlagen.");
-                        }
-                    })
-                    .catch(() => alert("❌ Serverfehler beim Logout."));
-            });
-        });
-    </script>
+    <!-- Logik zum Laden, Bearbeiten und Löschen von Benutzern -->
+    <script src="../js/admin-users.js" defer></script>
 </head>
 
 <body>
+
+    <!-- === HEADER-BEREICH === -->
     <header>
         <div class="logo">
+            <!-- Klick aufs Logo führt zur Startseite -->
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
+        <!-- Navigation für Admin -->
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -257,13 +36,17 @@
         </nav>
     </header>
 
+    <!-- === HAUPTINHALT: Benutzerliste === -->
     <main class="admin-container">
         <h2>Benutzer verwalten</h2>
+
+        <!-- In diesem Container wird die Tabelle mit allen Userdaten angezeigt -->
         <div id="userTableContainer">
             <p>🔄 Lade Benutzerliste...</p>
         </div>
     </main>
 
+    <!-- === FUSSZEILE === -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -273,6 +56,7 @@
             </div>
         </div>
     </footer>
+
 </body>
 
 </html>

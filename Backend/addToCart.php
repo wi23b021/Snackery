@@ -1,28 +1,27 @@
 <?php
-// ==============================================
-// Snackery – Produkt in den Session-Warenkorb legen
-// ==============================================
+// === addToCart.php ===
+// Fügt ein Produkt in den Session-basierten Warenkorb ein (für eingeloggte und nicht eingeloggte Nutzer)
 
-session_start();
+session_start(); // Session starten, um auf $_SESSION['cart'] zugreifen zu können
 
-// CORS und JSON-Header
-header("Access-Control-Allow-Origin: http://localhost");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type");
+// === CORS- und JSON-Konfiguration für fetch() ===
+header("Access-Control-Allow-Origin: http://localhost");     // Frontend-Zugriff erlauben
+header("Access-Control-Allow-Credentials: true");            // Cookies (Session) erlauben
+header("Content-Type: application/json");                    // JSON als Antwortformat
+header("Access-Control-Allow-Methods: POST");                // Nur POST erlaubt
+header("Access-Control-Allow-Headers: Content-Type");        // Nur Content-Type im Header notwendig
 
-// Nur POST erlauben
+// === Anfrage muss POST sein, sonst Fehlermeldung zurückgeben ===
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt.']);
     exit;
 }
 
-// JSON-Daten einlesen
+// === Die empfangenen Produktdaten als JSON auslesen ===
 $input = json_decode(file_get_contents("php://input"), true);
 
-// Validierung
+// === Prüfen, ob alle notwendigen Felder vorhanden sind ===
 if (
     !isset($input['id']) ||
     !isset($input['name']) ||
@@ -34,25 +33,24 @@ if (
     exit;
 }
 
-// Session-Warenkorb initialisieren, falls noch nicht vorhanden
+// === Session-Warenkorb initialisieren, wenn er noch nicht existiert ===
 if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
+    $_SESSION['cart'] = []; // Leeres Array anlegen
 }
 
-// Produkt-ID als Schlüssel verwenden
+// === Prüfen, ob das Produkt schon im Warenkorb existiert ===
 $productId = $input['id'];
 $existing = false;
 
-// Prüfen, ob Produkt bereits im Warenkorb ist
 foreach ($_SESSION['cart'] as &$item) {
     if ($item['id'] == $productId) {
-        $item['quantity'] += $input['quantity'];
+        $item['quantity'] += $input['quantity']; // Menge erhöhen
         $existing = true;
         break;
     }
 }
 
-// Falls nicht vorhanden, hinzufügen
+// === Wenn das Produkt noch nicht im Warenkorb war, neu hinzufügen ===
 if (!$existing) {
     $_SESSION['cart'][] = [
         'id' => $input['id'],
@@ -62,5 +60,5 @@ if (!$existing) {
     ];
 }
 
-// Erfolgsmeldung senden
+// === Erfolgsmeldung zurücksenden ===
 echo json_encode(['success' => true, 'message' => 'Produkt in Session gespeichert.']);

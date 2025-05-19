@@ -4,127 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Produkte verwalten – Snackery</title>
+
+    <!-- Zentrales Stylesheet für Layout und Design -->
     <link rel="stylesheet" href="../res/css/style.css">
 
-    <script defer>
-        document.addEventListener("DOMContentLoaded", () => {
-            // === ADMINPRÜFUNG ===
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProfile", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(user => {
-                    if (!user || user.role !== "admin") {
-                        window.location.href = "login.html";
-                    }
-                })
-                .catch(() => window.location.href = "login.html");
-
-            // === PRODUKTE LADEN ===
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProducts", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(products => {
-                    const container = document.getElementById("productTableContainer");
-
-                    if (!Array.isArray(products) || products.length === 0) {
-                        container.innerHTML = "<p>❌ Keine Produkte gefunden.</p>";
-                        return;
-                    }
-
-                    const rows = products.map(product => `
-                        <tr>
-                            <td>${product.id}</td>
-                            <td>${product.name}</td>
-                            <td>${parseFloat(product.price).toFixed(2).replace(".", ",")} €</td>
-                            <td>${product.category}</td>
-                            <td>
-                                <a class="btn" href="edit_product.html?id=${product.id}">Bearbeiten</a>
-                                <button class="btn deleteBtn" data-id="${product.id}">🗑️ Löschen</button>
-                            </td>
-                        </tr>
-                    `).join("");
-
-                    container.innerHTML = `
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                            <thead style="background-color: #f5f5f5;">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Preis</th>
-                                    <th>Kategorie</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    `;
-
-                    // === PRODUKT LÖSCHEN ===
-                    document.querySelectorAll(".deleteBtn").forEach(btn => {
-                        btn.addEventListener("click", () => {
-                            const productId = btn.dataset.id;
-
-                            if (confirm("❗ Willst du dieses Produkt wirklich löschen?")) {
-                                fetch(`/Snackery/Backend/logic/requestHandler.php?action=deleteProduct&id=${productId}`, {
-                                        method: "DELETE",
-                                        credentials: "include"
-                                    })
-                                    .then(res => res.json())
-                                    .then(result => {
-                                        if (result.success) {
-                                            alert("✅ Produkt gelöscht.");
-                                            window.location.reload();
-                                        } else {
-                                            alert("❌ Fehler beim Löschen: " + (result.message || "Unbekannter Fehler."));
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.error("❌ Serverfehler:", err);
-                                        alert("❌ Serverfehler beim Löschen.");
-                                    });
-                            }
-                        });
-                    });
-                })
-                .catch(err => {
-                    console.error("❌ Fehler beim Laden der Produkte:", err);
-                    document.getElementById("productTableContainer").innerHTML =
-                        "<p>❌ Fehler beim Laden der Produkte.</p>";
-                });
-
-            // ✅ LOGOUT PER FETCH
-            document.getElementById("logoutBtn").addEventListener("click", function(e) {
-                e.preventDefault();
-                fetch("/Snackery/Backend/logout.php", {
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = "index.html";
-                        } else {
-                            alert("❌ Logout fehlgeschlagen.");
-                        }
-                    })
-                    .catch(() => {
-                        alert("❌ Serverfehler beim Logout.");
-                    });
-            });
-        });
-    </script>
+    <!-- JavaScript für das Laden und Verwalten der Produkte (Admin-Funktion) -->
+    <script src="../js/admin-products.js" defer></script>
 </head>
 
 <body>
 
-    <!-- === HEADER === -->
+    <!-- === KOPFBEREICH MIT LOGO UND NAVIGATION === -->
     <header>
         <div class="logo">
+            <!-- Klick auf das Logo führt zur Startseite -->
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
+        <!-- Navigation für Admin-Zugriff -->
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -134,10 +33,14 @@
         </nav>
     </header>
 
-    <!-- === INHALT === -->
+    <!-- === HAUPTBEREICH: PRODUKTLISTE FÜR ADMIN === -->
     <main class="profile-container">
         <h2>Produkte verwalten</h2>
+
+        <!-- Button zum Hinzufügen eines neuen Produkts -->
         <a href="add_product.html" class="btn">+ Neues Produkt hinzufügen</a>
+
+        <!-- Container für die dynamisch generierte Produkttabelle -->
         <div id="productTableContainer" style="margin-top: 30px;">
             <p>🔄 Produkte werden geladen...</p>
         </div>

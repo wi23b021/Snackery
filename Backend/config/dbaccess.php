@@ -1,59 +1,42 @@
 <?php
-//
-// ==============================================
-// Snackery – Datenbankzugriffsklasse (PDO-basiert)
-// ==============================================
-//
-// Diese Klasse stellt eine sichere und wiederverwendbare Verbindung zur Datenbank her.
-// Sie wird überall im Projekt verwendet: Registrierung, Login, Produkte, Bestellungen etc.
-//
+// Datenbankverbindungsklasse für das gesamte Projekt
+// Wird in allen PHP-Dateien verwendet, die auf die Datenbank zugreifen (Login, Produkte, Bestellungen etc.)
 
 class DbAccess {
 
-    // ==============================
-    // 1. Verbindungsdaten
-    // ==============================
+    // Verbindungsparameter für die lokale Datenbank (XAMPP)
+    private $host = "localhost";      // Datenbankserver (meist localhost)
+    private $dbname = "snackery";     // Name der verwendeten Datenbank
+    private $username = "root";       // Standard-Username in XAMPP
+    private $password = "";           // In XAMPP meist kein Passwort gesetzt
 
-    private $host = "localhost";      // Hostname des MySQL-Servers (lokal: localhost)
-    private $dbname = "snackery";     // Name deiner Datenbank (muss existieren)
-    private $username = "root";       // Datenbank-Benutzer (standardmäßig root in XAMPP)
-    private $password = "";           // Leeres Passwort – Standard in XAMPP
-
-    // ==============================
-    // 2. Funktion zum Aufbau einer Verbindung
-    // ==============================
-
+    // Diese Methode stellt eine Verbindung zur Datenbank her und gibt das PDO-Objekt zurück
     public function connect() {
         try {
-            // Verbindung mit PDO aufbauen (utf8mb4 für volle Unicode-Unterstützung)
+            // PDO-Verbindung mit UTF-8 Zeichensatz aufbauen
             $pdo = new PDO(
                 "mysql:host=$this->host;dbname=$this->dbname;charset=utf8mb4",
                 $this->username,
                 $this->password
             );
 
-            // Fehler sollen als Exception behandelt werden (besseres Error-Handling)
+            // Fehlerbehandlung aktivieren (wirft Exceptions statt nur Warnungen)
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            // Ergebnis als assoziatives Array zurückgeben (Standard)
+            // Standard-Rückgabeformat: assoziatives Array
             $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
-            // Die PDO-Verbindung erfolgreich zurückgeben
+            // Erfolgreiche Verbindung wird zurückgegeben
             return $pdo;
 
         } catch (PDOException $e) {
-            // Falls Verbindung fehlschlägt, wird eine Exception geworfen
-            // Vorteil: zentrale Fehlerbehandlung in der aufrufenden Datei möglich
+            // Bei Fehler wird eine Exception mit genauer Beschreibung geworfen
             throw new Exception("Verbindung zur Datenbank fehlgeschlagen: " . $e->getMessage());
         }
     }
 
-    // ==============================
-    // 3. (Optional) Debug-Funktion – Verbindungsinfo ausgeben
-    // ==============================
-
+    // Optionale Debug-Funktion: gibt Verbindungsdaten zurück (z. B. für Adminbereich)
     public function getConnectionInfo() {
-        // Kann z. B. im Adminbereich zum Debugging ausgegeben werden
         return [
             'host' => $this->host,
             'database' => $this->dbname

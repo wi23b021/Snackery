@@ -4,15 +4,19 @@
 <head>
     <meta charset="UTF-8" />
     <title>Login – Snackery</title>
+
+    <!-- 🎨 Zentrales CSS für Layout & Design -->
     <link rel="stylesheet" href="../res/css/style.css" />
 
+    <!-- 🔐 Login-Logik & Logout-Funktion (direkt im HTML enthalten) -->
     <script defer>
         document.addEventListener("DOMContentLoaded", function() {
             const loginForm = document.getElementById("loginForm");
             const messageBox = document.getElementById("loginMessage");
 
+            // Beim Abschicken des Login-Formulars:
             loginForm.addEventListener("submit", async function(e) {
-                e.preventDefault(); // Verhindert das standardmäßige Formular-Absenden
+                e.preventDefault(); // kein Reload
 
                 const formData = new FormData(loginForm);
                 const data = {};
@@ -21,7 +25,7 @@
                 });
 
                 try {
-                    // Sende Login-Daten an die Backend-API
+                    // Anfrage an Backend mit JSON-Daten senden
                     const response = await fetch("/Snackery/Backend/login.php", {
                         method: "POST",
                         headers: {
@@ -34,8 +38,10 @@
                     const result = await response.json();
 
                     if (response.status === 200) {
-                        window.location.href = result.redirect; // Weiterleitung
+                        // Bei Erfolg: Weiterleitung zur Zielseite
+                        window.location.href = result.redirect;
                     } else {
+                        // Fehlermeldung ausgeben
                         messageBox.textContent = result.message || "❌ Login fehlgeschlagen.";
                         messageBox.style.color = "red";
                     }
@@ -47,7 +53,7 @@
                 }
             });
 
-            // ✅ Logout-Funktion – ersetzt href
+            // Logout-Funktion im Header-Menü
             const logoutLink = document.getElementById("logoutLink");
             logoutLink.addEventListener("click", function(e) {
                 e.preventDefault();
@@ -71,6 +77,7 @@
 </head>
 
 <body>
+    <!-- 🧭 Navigationsleiste mit Seitenlinks -->
     <header>
         <div class="logo">
             <a href="index.html">
@@ -91,6 +98,7 @@
         </nav>
     </header>
 
+    <!-- 🧾 Login-Formular mit Eingabefeldern für Benutzername/Passwort -->
     <main>
         <div class="register-container">
             <h2>Login</h2>
@@ -101,10 +109,12 @@
                 <button type="submit">Einloggen</button>
             </form>
 
+            <!-- 📢 Hier erscheint eine Fehlermeldung bei falscher Eingabe -->
             <p id="loginMessage" class="message-box"></p>
         </div>
     </main>
 
+    <!-- 🔚 Fußbereich mit rechtlichen Links -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>

@@ -4,17 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Produkte – Snackery</title>
+
+    <!-- 🎨 Zentrales CSS-Design -->
     <link rel="stylesheet" href="../res/css/style.css">
-    <script src="../res/js/session-check.js" defer></script>
+
+    <!-- 🧠 Session-Check & Produkt-Logik -->
+    <script src="../js/session-check.js" defer></script>
+    <script src="../js/products.js" defer></script>
 </head>
 
 <body>
+
+    <!-- 🔝 Kopfbereich mit Logo und Navigation -->
     <header>
         <div class="logo">
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -27,17 +35,21 @@
         </nav>
     </header>
 
+    <!-- 🛍️ Hauptinhalt: Produktübersicht mit Filteroptionen -->
     <main>
         <h2>Unsere Snacks</h2>
 
+        <!-- 🔎 Filterbereich: Suche + Kategorie + Sortierung -->
         <section class="filter-section">
             <input type="text" id="searchInput" placeholder="🔍 Nach Name suchen...">
+
             <select id="categoryFilter">
                 <option value="">Alle Kategorien</option>
                 <option value="Snack">Snack</option>
                 <option value="Sweet">Sweet</option>
                 <option value="Salty & Spicy">Salty & Spicy</option>
             </select>
+
             <select id="sortFilter">
                 <option value="">Sortieren nach</option>
                 <option value="name-asc">Name (A–Z)</option>
@@ -47,11 +59,13 @@
             </select>
         </section>
 
+        <!-- 🧱 Produktliste: Wird dynamisch per JS befüllt -->
         <div class="product-grid" id="productGrid">
             <p>🔄 Produkte werden geladen...</p>
         </div>
     </main>
 
+    <!-- 🔚 Fußbereich mit rechtlichen Links -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -62,106 +76,6 @@
         </div>
     </footer>
 
-    <script>
-        let allProducts = [];
-
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch("/Snackery/Backend/sessionStatus.php", {
-                    credentials: "include"
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("myOrdersLink").style.display = data.loggedIn ? "inline" : "none";
-                });
-
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProducts", {
-                    credentials: "include"
-                })
-                .then(response => response.json())
-                .then(data => {
-                    allProducts = data;
-                    renderProducts(allProducts);
-                })
-                .catch(() => {
-                    showError("❌ Produkte konnten nicht geladen werden.");
-                });
-
-            document.getElementById("searchInput").addEventListener("input", applyFilters);
-            document.getElementById("categoryFilter").addEventListener("change", applyFilters);
-            document.getElementById("sortFilter").addEventListener("change", applyFilters);
-        });
-
-        function showError(msg) {
-            document.getElementById("productGrid").innerHTML = `<p>${msg}</p>`;
-        }
-
-        function renderProducts(products) {
-            const grid = document.getElementById("productGrid");
-            grid.innerHTML = "";
-
-            if (!products.length) {
-                grid.innerHTML = "<p>❌ Keine Produkte verfügbar.</p>";
-                return;
-            }
-
-            products.forEach(product => {
-                const card = document.createElement("div");
-                card.className = "product-card";
-                const priceFormatted = parseFloat(product.price).toFixed(2).replace(".", ",");
-                card.innerHTML = `
-                    <a href="product_detail.html?id=${product.id}">
-                        <img src="../../Backend/productpictures/${product.image}" 
-                             alt="${product.name}" 
-                             onerror="this.src='../res/img/fallback.jpg';">
-                        <h3>${product.name}</h3>
-                        <p>€ ${priceFormatted}</p>
-                    </a>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function applyFilters() {
-            const search = document.getElementById("searchInput").value.toLowerCase();
-            const category = document.getElementById("categoryFilter").value;
-            const sort = document.getElementById("sortFilter").value;
-
-            let filtered = allProducts.filter(p =>
-                p.name.toLowerCase().includes(search) &&
-                (category === "" || p.category === category)
-            );
-
-            if (sort === "name-asc") {
-                filtered.sort((a, b) => a.name.localeCompare(b.name));
-            } else if (sort === "name-desc") {
-                filtered.sort((a, b) => b.name.localeCompare(a.name));
-            } else if (sort === "price-asc") {
-                filtered.sort((a, b) => a.price - b.price);
-            } else if (sort === "price-desc") {
-                filtered.sort((a, b) => b.price - a.price);
-            }
-
-            renderProducts(filtered);
-        }
-
-        document.getElementById("logoutBtn").addEventListener("click", function(e) {
-            e.preventDefault();
-            fetch("/Snackery/Backend/logout.php", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = "index.html";
-                    } else {
-                        alert("❌ Fehler beim Logout.");
-                    }
-                })
-                .catch(() => {
-                    alert("❌ Serverfehler beim Logout.");
-                });
-        });
-    </script>
 </body>
 
 </html>

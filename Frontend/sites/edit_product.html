@@ -4,39 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Produkt bearbeiten – Snackery</title>
+
+    <!-- ✅ Zentrales Stylesheet einbinden -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- ✅ Sessionprüfung für Zugriffsschutz -->
     <script src="../res/js/session-check.js" defer></script>
 
-    <script defer>
-        document.addEventListener("DOMContentLoaded", () => {
-            const logoutLink = document.getElementById("logoutBtn");
-
-            logoutLink.addEventListener("click", function(e) {
-                e.preventDefault();
-
-                fetch("/Snackery/Backend/logout.php", {
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = "index.html";
-                        } else {
-                            alert("❌ Fehler beim Logout.");
-                        }
-                    })
-                    .catch(() => {
-                        alert("❌ Serverfehler beim Logout.");
-                    });
-            });
-        });
-    </script>
+    <!-- ✅ Ausgelagertes Skript zum Bearbeiten des Produkts -->
+    <script src="../js/edit-product.js" defer></script>
 </head>
 
 <body>
 
+    <!-- === Navigationsbereich === -->
     <header>
         <div class="logo">
+            <!-- Zurück zur Startseite -->
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
@@ -51,21 +35,32 @@
         </nav>
     </header>
 
+    <!-- === Hauptbereich zum Bearbeiten eines Produkts === -->
     <main>
         <div class="register-container">
             <h2>Produkt bearbeiten</h2>
 
+            <!-- Formular mit vorausgefüllten Daten (Name, Preis, Kategorie) -->
             <form id="editProductForm">
+                <!-- Produktname bearbeiten -->
                 <input type="text" id="name" placeholder="Produktname" required>
+
+                <!-- Preis (Euro) bearbeiten -->
                 <input type="number" step="0.01" id="price" placeholder="Preis (€)" required>
+
+                <!-- Kategorie bearbeiten -->
                 <input type="text" id="category" placeholder="Kategorie" required>
+
+                <!-- Speichern-Button -->
                 <button type="submit">Speichern</button>
             </form>
 
+            <!-- Rückmeldung bei Erfolg oder Fehler -->
             <p id="feedback" style="margin-top: 20px; font-weight: bold;"></p>
         </div>
     </main>
 
+    <!-- === Footer mit rechtlichen Links === -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -76,78 +71,6 @@
         </div>
     </footer>
 
-    <script>
-        const productId = new URLSearchParams(window.location.search).get("id");
-
-        if (!productId) {
-            alert("❌ Keine Produkt-ID gefunden.");
-            window.location.href = "admin_products.html";
-        }
-
-        fetch(`/Snackery/Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
-                credentials: "include"
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("Serverantwort nicht OK");
-                return res.json();
-            })
-            .then(product => {
-                if (!product || !product.id) {
-                    alert("❌ Produkt nicht gefunden.");
-                    window.location.href = "admin_products.html";
-                    return;
-                }
-
-                document.getElementById("name").value = product.name;
-                document.getElementById("price").value = product.price;
-                document.getElementById("category").value = product.category;
-            })
-            .catch(error => {
-                console.error("Fehler beim Laden des Produkts:", error);
-                alert("❌ Fehler beim Laden des Produkts.");
-                window.location.href = "admin_products.html";
-            });
-
-        document.getElementById("editProductForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-
-            const updatedProduct = {
-                name: document.getElementById("name").value.trim(),
-                price: parseFloat(document.getElementById("price").value),
-                category: document.getElementById("category").value.trim()
-            };
-
-            fetch(`/Snackery/Backend/logic/requestHandler.php?action=updateProduct&id=${productId}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(updatedProduct),
-                    credentials: "include"
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error("Serverfehler bei updateProduct");
-                    return response.json();
-                })
-                .then(result => {
-                    const feedback = document.getElementById("feedback");
-                    feedback.textContent = result.success ?
-                        "✅ Produkt erfolgreich gespeichert!" :
-                        "❌ " + (result.message || "Fehler beim Speichern.");
-                    feedback.style.color = result.success ? "green" : "red";
-
-                    if (result.success) {
-                        setTimeout(() => window.location.href = "admin_products.html", 2000);
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ Serverfehler:", error);
-                    const feedback = document.getElementById("feedback");
-                    feedback.textContent = "❌ Fehler beim Senden.";
-                    feedback.style.color = "red";
-                });
-        });
-    </script>
 </body>
 
 </html>

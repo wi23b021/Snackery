@@ -1,41 +1,41 @@
 <?php
-// =======================================
-// sessionStatus.php
-// Snackery – Sessionstatus prüfen für JavaScript-Requests
-// =======================================
+// === sessionStatus.php ===
+// API-Endpunkt, um den aktuellen Login-Status per fetch() im Frontend abzufragen
 
-// ✅ SESSION-KONFIGURATION (Korrektur: Pfad global gültig)
+// Konfiguration der Session-Cookies
 session_set_cookie_params([
-    'lifetime' => 0,             // Session nur für die Dauer der Browsersitzung
-    'path' => '/',               // <<< global gültig für alle Pfade!
-    'domain' => 'localhost',     // In Produktion anpassen (z. B. deine-domain.at)
-    'secure' => false,           // true = nur über HTTPS (für localhost: false)
-    'httponly' => true,          // Schutz: Kein Zugriff via JavaScript
-    'samesite' => 'Lax'          // CSRF-Schutz für Fremdanfragen
+    'lifetime' => 0,             // Session endet mit dem Schließen des Browsers
+    'path' => '/',               // Cookie gilt für das gesamte Projekt
+    'domain' => 'localhost',     // Nur lokal gültig – in Produktion anpassen
+    'secure' => false,           // HTTPS nur bei Live-Seiten – lokal nicht notwendig
+    'httponly' => true,          // Erhöhte Sicherheit: Kein Zugriff per JavaScript
+    'samesite' => 'Lax'          // Schutz gegen CSRF bei externen Anfragen
 ]);
 
-session_start();
+session_start(); // Session starten
 
-// === CORS-KONFIGURATION (Frontend-Zugriff ermöglichen) ===
+// Header für Cross-Origin-Requests (CORS)
 $allowedOrigin = "http://localhost";
-header("Access-Control-Allow-Origin: $allowedOrigin");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: $allowedOrigin");     // Erlaubt Frontend-Zugriff von lokal
+header("Access-Control-Allow-Credentials: true");          // Cookies mitschicken erlauben
+header("Access-Control-Allow-Headers: Content-Type");      // JSON senden erlauben
+header("Content-Type: application/json");                  // Antwort ist JSON
 
-// === Preflight-Request (für OPTIONS-Anfragen durch fetch()) ===
+// OPTION-Anfrage abfangen (CORS Preflight bei fetch())
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204); // Kein Inhalt notwendig
+    http_response_code(204); // 204 = Kein Inhalt notwendig
     exit();
 }
 
-// === SESSIONSTATUS PRÜFEN ===
+// Prüfung ob ein Benutzer in der Session gespeichert ist
 if (isset($_SESSION['user']) && is_array($_SESSION['user'])) {
+    // Wenn eingeloggt → Login-Status und Rolle als JSON senden
     echo json_encode([
         "loggedIn" => true,
         "role" => $_SESSION['user']['role'] ?? "user"
     ]);
 } else {
+    // Wenn nicht eingeloggt → Rückmeldung mit false
     echo json_encode(["loggedIn" => false]);
 }
 ?>

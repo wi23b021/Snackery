@@ -4,19 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Adminbereich – Snackery</title>
+
+    <!-- Zentrales Stylesheet für Layout und Farben -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- Prüft per fetch(), ob ein Admin eingeloggt ist -->
     <script src="../js/session-check.js" defer></script>
 </head>
 
 <body>
 
+    <!-- ===== HEADER ===== -->
     <header>
         <div class="logo">
+            <!-- Logo verlinkt zur Startseite -->
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
 
+        <!-- Navigation für Admins -->
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -28,11 +35,13 @@
         </nav>
     </header>
 
+    <!-- ===== HAUPTBEREICH ===== -->
     <main>
         <div class="profile-container">
             <h2>Willkommen im Adminbereich</h2>
             <p>Hier kannst du deinen Online-Shop verwalten:</p>
 
+            <!-- Navigationslinks zu allen Admin-Seiten -->
             <ul style="list-style: none; padding: 0; text-align: center;">
                 <li style="margin-bottom: 20px;">
                     <a class="btn" href="admin_products.html">Produkte verwalten</a>
@@ -47,6 +56,7 @@
         </div>
     </main>
 
+    <!-- ===== FUSSZEILE ===== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -57,11 +67,12 @@
         </div>
     </footer>
 
+    <!-- ===== LOGOUT-PER-FETCH ===== -->
     <script>
-        // Logout-Funktion mit Weiterleitung
         document.getElementById("logoutBtn").addEventListener("click", function(e) {
             e.preventDefault();
 
+            // Logout über API – löscht Session und leitet zurück zur Startseite
             fetch("/Snackery/Backend/logout.php", {
                     credentials: "include"
                 })

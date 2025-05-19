@@ -1,56 +1,65 @@
 <?php
-// ==============================================
-// Snackery – Benutzer-Login (API für fetch())
-// ==============================================
+// === login.php ===
+// Diese Datei wird per fetch() angesprochen, um Nutzer einzuloggen (als API)
 
-// 1. SESSION-KONFIGURATION
+// === Session-Konfiguration setzen ===
 session_set_cookie_params([
-    'lifetime' => 0,            // Session läuft nur bis zum Schließen des Browsers
-    'path' => '/Snackery',       // Gültig für das gesamte Projektverzeichnis
-    'domain' => 'localhost',     // Für Livebetrieb anpassen
-    'secure' => false,           // true bei HTTPS (für localhost = false)
-    'httponly' => true,          // Schutz: Kein Zugriff via JavaScript
-    'samesite' => 'Lax'          // CSRF-Schutz für Fremdanfragen
+    'lifetime' => 0,               // Session läuft nur bis zum Schließen des Browsers
+    'path' => '/Snackery',         // Gültig für den ganzen Projektpfad
+    'domain' => 'localhost',       // Für lokale Entwicklung
+    'secure' => false,             // false für localhost (kein HTTPS)
+    'httponly' => true,            // JavaScript kann nicht auf die Session zugreifen
+    'samesite' => 'Lax'            // Grundlegender Schutz gegen CSRF
 ]);
-session_start();
+session_start(); // Session aktivieren
 
-// 2. HEADER FÜR FETCH() UND CORS
-header("Access-Control-Allow-Origin: http://localhost"); // Genau anpassen
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
+// === CORS- und Content-Type-Header setzen ===
+header("Access-Control-Allow-Origin: http://localhost");  // Frontend-Zugriff erlauben
+header("Access-Control-Allow-Credentials: true");         // Cookies (Session) erlauben
+header("Content-Type: application/json");                 // Antwort im JSON-Format
 
-// 3. Nur POST zulassen
+// === Nur POST-Anfragen akzeptieren ===
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405); // Methode nicht erlaubt
+    http_response_code(405);
     echo json_encode(["success" => false, "message" => "Nur POST erlaubt."]);
     exit;
 }
 
-// 4. JSON-Daten auslesen
+// === JSON-Daten auslesen und prüfen ===
 $input = json_decode(file_get_contents("php://input"), true);
-
 if (!$input || !isset($input['username']) || !isset($input['password'])) {
-    http_response_code(400); // Bad Request
+    http_response_code(400);
     echo json_encode(["success" => false, "message" => "Benutzername und Passwort erforderlich."]);
     exit;
 }
 
+// === Eingaben bereinigen ===
 $usernameOrEmail = trim($input['username']);
 $password = trim($input['password']);
 
-// 5. DB-Verbindung
+// === DB-Verbindung herstellen ===
 require_once __DIR__ . '/config/dbaccess.php';
 $db = new DbAccess();
 $conn = $db->connect();
 
-// 6. Benutzer suchen
+// === Benutzer in der Datenbank suchen (per Username oder E-Mail) ===
 $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
 $stmt->execute([$usernameOrEmail, $usernameOrEmail]);
 $user = $stmt->fetch();
 
-// 7. Passwort prüfen
+// === Passwort prüfen und Inaktiv-Status berücksichtigen ===
 if ($user && password_verify($password, $user['password'])) {
-    // Session-Daten setzen (minimale Datenmenge empfohlen)
+    // Wenn Benutzer auf inaktiv gesetzt wurde
+    if ((int)$user['active'] === 0) {
+        http_response_code(403);
+        echo json_encode([
+            "success" => false,
+            "message" => "❌ Dein Konto ist deaktiviert. Bitte wende dich an den Support."
+        ]);
+        exit;
+    }
+
+    // === Session-Daten setzen ===
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['user'] = [
@@ -59,25 +68,17 @@ if ($user && password_verify($password, $user['password'])) {
         "role" => $user['role']
     ];
 
-    // Weiterleitung je nach Rolle
-    if ($user['role'] === 'admin') {
-        echo json_encode([
-            "success" => true,
-            "message" => "Login erfolgreich!",
-            "role" => $user['role'],
-            "redirect" => "admin.html"
-        ]);
-    } else {
-        echo json_encode([
-            "success" => true,
-            "message" => "Login erfolgreich!",
-            "role" => $user['role'],
-            "redirect" => "profil.html"
-        ]);
-    }
+    // === Erfolgreicher Login: Rolle bestimmt Weiterleitung ===
+    echo json_encode([
+        "success" => true,
+        "message" => "Login erfolgreich!",
+        "role" => $user['role'],
+        "redirect" => $user['role'] === 'admin' ? "admin.html" : "profil.html"
+    ]);
     exit;
+
 } else {
-    // Fehler bei Login
+    // === Fehlerhafter Login (Benutzer nicht gefunden oder Passwort falsch) ===
     http_response_code(401);
     echo json_encode([
         "success" => false,

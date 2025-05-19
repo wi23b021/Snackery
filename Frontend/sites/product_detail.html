@@ -4,17 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Produktdetails – Snackery</title>
+
+    <!-- 🎨 Zentrales CSS-Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
-    <script src="../res/js/session-check.js" defer></script>
+
+    <!-- 🧠 Session-Prüfung & Produktdaten-Logik -->
+    <script src="../js/session-check.js" defer></script>
+    <script src="../js/product_detail.js" defer></script>
 </head>
 
 <body>
+
+    <!-- 🔝 Kopfbereich mit Logo und Navigation -->
     <header>
         <div class="logo">
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
+
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -26,13 +34,17 @@
         </nav>
     </header>
 
+    <!-- 📦 Produktdetails werden hier per JS eingefügt -->
     <main>
         <div class="product-detail" id="productContainer">
             <p>🔄 Produkt wird geladen...</p>
         </div>
+
+        <!-- 🔙 Zurück-Button zur Produktübersicht -->
         <a href="products.html" class="back-link">← Zurück zur Übersicht</a>
     </main>
 
+    <!-- 🔚 Fußbereich mit rechtlichen Links -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -43,124 +55,6 @@
         </div>
     </footer>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const productId = urlParams.get("id");
-
-            if (!productId) {
-                showError("❌ Kein Produkt ausgewählt.");
-                return;
-            }
-
-            fetch(`/Snackery/Backend/logic/requestHandler.php?action=getProduct&id=${productId}`, {
-                    credentials: "include"
-                })
-                .then(response => response.json())
-                .then(product => {
-                    if (!product || !product.id) {
-                        showError("❌ Produkt nicht gefunden.");
-                        return;
-                    }
-
-                    const container = document.getElementById("productContainer");
-                    const priceFormatted = parseFloat(product.price).toFixed(2).replace(".", ",");
-
-                    container.innerHTML = `
-                        <img src="../../Backend/productpictures/${product.image}" 
-                             alt="${product.name}" 
-                             style="max-width: 300px;" 
-                             onerror="this.src='../res/img/fallback.jpg';">
-                        <div class="product-info">
-                            <h2>${product.name}</h2>
-                            <p>${product.description}</p>
-                            <p class="price">€ ${priceFormatted}</p>
-                            <p><strong>Kategorie:</strong> ${product.category}</p>
-                            <p><strong>Herkunftsland:</strong> ${product.origin_country}</p>
-                            <p><strong>Verfügbar:</strong> ${product.stock} Stück</p>
-                            <button id="addToCartBtn">🛒 In den Warenkorb</button>
-                        </div>
-                    `;
-
-                    // In den Warenkorb Button
-                    document.getElementById("addToCartBtn").addEventListener("click", () => {
-                        addToCart(product);
-                        sendToBackend(product);
-                    });
-                })
-                .catch(error => {
-                    console.error("❌ Fehler beim Laden des Produkts:", error);
-                    showError("⚠️ Serverfehler – Produkt konnte nicht geladen werden.");
-                });
-
-            // Logout-Button
-            document.getElementById("logoutBtn").addEventListener("click", function(e) {
-                e.preventDefault();
-                fetch("/Snackery/Backend/logout.php", {
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = "index.html";
-                        } else {
-                            alert("❌ Fehler beim Logout.");
-                        }
-                    })
-                    .catch(() => {
-                        alert("❌ Serverfehler beim Logout.");
-                    });
-            });
-        });
-
-        function showError(message) {
-            document.getElementById("productContainer").innerHTML = `<h2>${message}</h2>`;
-        }
-
-        function addToCart(product) {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const existing = cart.find(item => item.id == product.id);
-
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: parseFloat(product.price),
-                    quantity: 1
-                });
-            }
-
-            localStorage.setItem("cart", JSON.stringify(cart));
-            alert("✅ Produkt wurde lokal zum Warenkorb hinzugefügt!");
-        }
-
-        function sendToBackend(product) {
-            fetch("/Snackery/Backend/addToCart.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        quantity: 1
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) {
-                        alert("⚠️ Backend konnte das Produkt nicht speichern.");
-                    }
-                })
-                .catch(() => {
-                    alert("❌ Fehler beim Senden an das Backend.");
-                });
-        }
-    </script>
 </body>
 
 </html>
