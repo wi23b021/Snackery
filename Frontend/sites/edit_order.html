@@ -4,15 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Bestellung bearbeiten – Snackery</title>
+
+    <!-- ✅ Zentrales CSS-Stylesheet -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- ✅ Session-Prüfung für Zugriffsschutz -->
     <script src="../res/js/session-check.js" defer></script>
 
+    <!-- ✅ JS für Logout-Funktion -->
     <script defer>
         document.addEventListener("DOMContentLoaded", function() {
             const logoutBtn = document.getElementById("logoutBtn");
 
             logoutBtn.addEventListener("click", function(e) {
                 e.preventDefault();
+
                 fetch("/Snackery/Backend/logout.php", {
                         credentials: "include"
                     })
@@ -34,6 +40,7 @@
 
 <body>
 
+    <!-- === HEADER mit Navigation === -->
     <header>
         <div class="logo">
             <a href="index.html">
@@ -50,13 +57,17 @@
         </nav>
     </header>
 
+    <!-- === FORMULAR ZUR STATUSÄNDERUNG EINER BESTELLUNG === -->
     <main class="register-container">
         <h2>Bestellung bearbeiten</h2>
 
+        <!-- 🧾 Formular zur manuellen Änderung des Bestellstatus -->
         <form id="editOrderForm">
+            <!-- Eingabe der Bestellnummer -->
             <label for="orderId">Bestell-ID:</label>
             <input type="number" id="orderId" name="order_id" required>
 
+            <!-- Auswahl des neuen Status -->
             <label for="status">Neuer Status:</label>
             <select id="status" name="status" required>
                 <option value="offen">offen</option>
@@ -65,18 +76,22 @@
                 <option value="storniert">storniert</option>
             </select>
 
+            <!-- Absende-Button -->
             <button type="submit">Änderung speichern</button>
         </form>
 
+        <!-- Feedback für Erfolg oder Fehler -->
         <p id="feedback" style="margin-top: 20px; font-weight: bold;"></p>
     </main>
 
+    <!-- === SCRIPT: Formular absenden mit fetch() === -->
     <script>
         document.getElementById("editOrderForm").addEventListener("submit", function(e) {
             e.preventDefault();
 
             const formData = new FormData(this);
 
+            // 📤 Bestellung per fetch an das Backend senden
             fetch("/Snackery/Backend/logic/requestHandler.php?action=editOrder", {
                     method: "POST",
                     body: formData,

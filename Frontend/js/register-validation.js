@@ -1,24 +1,18 @@
-// ==============================================
-// register-validation.js
-// Snackery – Formularvalidierung für Registrierung
-// ==============================================
-
 document.addEventListener("DOMContentLoaded", () => {
-
-    // Zugriff auf das Registrierungsformular
+    // == Referenz auf das Registrierungsformular holen ==
     const form = document.getElementById("registerForm");
 
-    // Eingabefelder erfassen
+    // == Eingabefelder im Formular referenzieren ==
     const usernameInput = form.querySelector("input[name='username']");
     const emailInput = form.querySelector("input[name='email']");
     const password = form.querySelector("input[name='password']");
     const passwordRepeat = form.querySelector("input[name='password_repeat']");
 
-    // Funktion: Fehlermeldung unter einem Eingabefeld anzeigen
+    // == Zeigt eine rote Fehlermeldung direkt unter einem Input-Feld an ==
     const createError = (input, message) => {
         const existingError = input.nextElementSibling;
         if (existingError && existingError.classList.contains("error-message")) {
-            existingError.remove();
+            existingError.remove(); // alte Fehlermeldung entfernen
         }
 
         const error = document.createElement("div");
@@ -26,18 +20,18 @@ document.addEventListener("DOMContentLoaded", () => {
         error.style.color = "red";
         error.style.fontSize = "0.9em";
         error.textContent = message;
-        input.insertAdjacentElement("afterend", error);
+        input.insertAdjacentElement("afterend", error); // Fehlermeldung anzeigen
     };
 
-    // Funktion: Fehlermeldung entfernen
+    // == Entfernt eine bestehende Fehlermeldung unter einem Input-Feld ==
     const clearError = (input) => {
         const existingError = input.nextElementSibling;
         if (existingError && existingError.classList.contains("error-message")) {
-            existingError.remove();
+            existingError.remove(); // Fehlermeldung löschen
         }
     };
 
-    // Funktion: Live-Check ob Benutzername oder E-Mail bereits vergeben ist
+    // == AJAX-Check, ob Username oder Email bereits vergeben ist ==
     const checkAvailability = () => {
         const username = usernameInput.value.trim();
         const email = emailInput.value.trim();
@@ -69,19 +63,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Live-Überprüfung bei Eingabe
+    // == Führt den Verfügbarkeitscheck bei jeder Eingabeänderung aus ==
     usernameInput.addEventListener("input", checkAvailability);
     emailInput.addEventListener("input", checkAvailability);
 
-    // Formularvalidierung beim Absenden
+    // == Validierung beim Formular-Absenden ==
     form.addEventListener("submit", (e) => {
         const errors = form.querySelectorAll(".error-message");
         if (errors.length > 0) {
-            e.preventDefault();
+            e.preventDefault(); // Absenden verhindern
             alert("❗ Bitte behebe zuerst die markierten Fehler.");
             return;
         }
 
+        // Passwortgleichheit prüfen
         if (password.value !== passwordRepeat.value) {
             e.preventDefault();
             createError(passwordRepeat, "❌ Die Passwörter stimmen nicht überein.");

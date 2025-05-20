@@ -4,26 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Snackery – Internationale Snacks</title>
+
+    <!-- 📦 Stylesheet für grundlegendes Layout und Design -->
     <link rel="stylesheet" href="../res/css/style.css">
+
+    <!-- 🛡️ JS zur Session-Prüfung (zeigt/z. B. Login, Logout je nach Status) -->
     <script src="../js/session-check.js" defer></script>
-    <!-- ✅ zentrale Session-Prüfung -->
 </head>
 
 <body>
 
+    <!-- ==== KOPFBEREICH MIT NAVIGATION ==== -->
     <header>
         <div class="logo">
+            <!-- 🏠 Klick auf das Logo führt zur Startseite -->
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
         </div>
         <nav>
             <ul>
+                <!-- 🔗 Navigation zu Unterseiten -->
                 <li><a href="index.html">Startseite</a></li>
                 <li><a href="products.html">Produkte</a></li>
                 <li><a href="cart.html">Warenkorb</a></li>
                 <li><a href="login.html" id="loginLink">Login</a></li>
                 <li><a href="register.html" id="registerLink">Registrieren</a></li>
+                <!-- 👤 Sichtbar nur bei Login -->
                 <li><a href="profil.html" id="profileLink" style="display: none;">Mein Profil</a></li>
                 <li><a href="my_orders.html" id="myOrdersLink" style="display: none;">Meine Bestellungen</a></li>
                 <li><a href="#" id="logoutBtn" style="display: none;">Logout</a></li>
@@ -31,12 +38,14 @@
         </nav>
     </header>
 
+    <!-- ==== WILLKOMMENSTEXT + CTA ==== -->
     <section class="hero">
         <h1>Willkommen bei Snackery</h1>
         <p>Entdecke internationale Snacks aus aller Welt – direkt zu dir nach Hause geliefert!</p>
         <a href="products.html" class="btn">Jetzt entdecken</a>
     </section>
 
+    <!-- ==== VORTEILE VON SNACKERY ==== -->
     <section class="features-section">
         <div class="feature-box">
             <img src="../res/icons/global.png" alt="Weltweiter Versand">
@@ -55,6 +64,7 @@
         </div>
     </section>
 
+    <!-- ==== FUSSZEILE ==== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>

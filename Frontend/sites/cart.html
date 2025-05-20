@@ -4,13 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Warenkorb – Snackery</title>
+
+    <!-- Verlinkung auf das zentrale Stylesheet für das Layout -->
     <link rel="stylesheet" href="../res/css/style.css">
-    <script src="../res/js/session-check.js" defer></script>
+
+    <!-- Script zum Überprüfen des Login-Status (zeigt z. B. „Meine Bestellungen“) -->
+    <script src="../js/session-check.js" defer></script>
+
+    <!-- Script für das Laden, Bearbeiten und Leeren des Warenkorbs -->
+    <script src="../js/cart.js" defer></script>
 </head>
 
 <body>
+    <!-- ====== KOPFBEREICH MIT NAVIGATION ====== -->
     <header>
         <div class="logo">
+            <!-- Klick auf das Logo führt zur Startseite -->
             <a href="index.html">
                 <img src="../res/img/snackery-logo.jpg" alt="Snackery Logo">
             </a>
@@ -27,14 +36,24 @@
         </nav>
     </header>
 
+    <!-- ====== INHALTSBEREICH: WARENKORB ====== -->
     <main style="text-align: center; padding: 50px;">
         <h1>🛒 Dein Warenkorb</h1>
+
+        <!-- Hier werden dynamisch alle Produkte im Warenkorb angezeigt -->
         <div id="cartItems"></div>
+
+        <!-- Der Gesamtpreis wird live berechnet -->
         <h3 id="totalPrice">Gesamt: € 0.00</h3>
+
+        <!-- Link zur Checkout-Seite -->
         <a href="checkout.html" class="btn">Zur Kasse</a>
+
+        <!-- Button zum vollständigen Leeren des Warenkorbs -->
         <button id="clearCartBtn">Warenkorb leeren</button>
     </main>
 
+    <!-- ====== FUSSZEILE ====== -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -44,107 +63,6 @@
             </div>
         </div>
     </footer>
-
-    <script>
-        function loadCart() {
-            const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const container = document.getElementById("cartItems");
-            const totalDisplay = document.getElementById("totalPrice");
-
-            container.innerHTML = "";
-            if (cart.length === 0) {
-                container.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
-                totalDisplay.textContent = "Gesamt: € 0.00";
-                return;
-            }
-
-            let total = 0;
-
-            cart.forEach((item, index) => {
-                const div = document.createElement("div");
-                div.className = "cart-item";
-                div.innerHTML = `
-                    <p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} 
-                    <button onclick="updateQuantity(${item.id}, -1)">-</button>
-                    <strong>${item.quantity}</strong>
-                    <button onclick="updateQuantity(${item.id}, 1)">+</button>
-                    </p>
-                    <button onclick="removeFromCart(${item.id})">🗑️ Entfernen</button>
-                `;
-                container.appendChild(div);
-                total += item.price * item.quantity;
-            });
-
-            totalDisplay.textContent = `Gesamt: € ${total.toFixed(2)}`;
-        }
-
-        function updateQuantity(productId, change) {
-            const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const item = cart.find(p => p.id === productId);
-            if (!item) return;
-
-            item.quantity += change;
-            if (item.quantity <= 0) {
-                const index = cart.findIndex(p => p.id === productId);
-                cart.splice(index, 1);
-            }
-
-            localStorage.setItem("cart", JSON.stringify(cart));
-            loadCart();
-        }
-
-        function removeFromCart(productId) {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            cart = cart.filter(item => item.id !== productId);
-            localStorage.setItem("cart", JSON.stringify(cart));
-            loadCart();
-        }
-
-        document.getElementById("clearCartBtn").addEventListener("click", () => {
-            if (confirm("🧹 Möchtest du wirklich den ganzen Warenkorb leeren?")) {
-                localStorage.removeItem("cart");
-                loadCart();
-                alert("✅ Warenkorb wurde geleert!");
-            }
-        });
-
-        document.getElementById("logoutBtn").addEventListener("click", function(e) {
-            e.preventDefault();
-            fetch("/Snackery/Backend/logout.php", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = "index.html";
-                    } else {
-                        alert("❌ Logout fehlgeschlagen.");
-                    }
-                })
-                .catch(() => {
-                    alert("❌ Serverfehler beim Logout.");
-                });
-        });
-
-        document.addEventListener("DOMContentLoaded", () => {
-            loadCart();
-
-            fetch("/Snackery/Backend/sessionStatus.php", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn) {
-                        document.getElementById("myOrdersLink").style.display = "inline";
-                    } else {
-                        document.getElementById("myOrdersLink").style.display = "none";
-                    }
-                })
-                .catch(() => {
-                    document.getElementById("myOrdersLink").style.display = "none";
-                });
-        });
-    </script>
 </body>
 
 </html>

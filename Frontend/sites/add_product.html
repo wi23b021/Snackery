@@ -4,81 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Neues Produkt hinzufügen – Snackery</title>
+
+    <!-- Stylesheet und Formular-Logik einbinden -->
     <link rel="stylesheet" href="../res/css/style.css">
-
-    <script defer>
-        document.addEventListener("DOMContentLoaded", () => {
-            // ========== ADMINZUGANG PRÜFEN ==========
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=getProfile", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(user => {
-                    if (!user || user.role !== "admin") {
-                        window.location.href = "login.html";
-                    }
-                })
-                .catch(() => window.location.href = "login.html");
-
-            // ========== PRODUKTFORMULAR HANDHABEN ==========
-            const form = document.getElementById("productForm");
-            const message = document.getElementById("message");
-
-            form.addEventListener("submit", function(e) {
-                e.preventDefault();
-
-                const formData = new FormData(form);
-
-                fetch("/Snackery/Backend/logic/requestHandler.php?action=addProduct", {
-                        method: "POST",
-                        body: formData,
-                        credentials: "include"
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            message.textContent = "✅ Produkt erfolgreich gespeichert!";
-                            message.style.color = "green";
-                            form.reset();
-                        } else {
-                            message.textContent = "❌ Fehler: " + (data.message || "Produkt konnte nicht gespeichert werden.");
-                            message.style.color = "red";
-                        }
-                    })
-                    .catch(err => {
-                        console.error("Fehler:", err);
-                        message.textContent = "❌ Serverfehler – bitte später erneut versuchen.";
-                        message.style.color = "red";
-                    });
-            });
-
-            // ========== LOGOUT-FETCH EINBAU ==========
-            const logoutBtn = document.getElementById("logoutBtn");
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", function(e) {
-                    e.preventDefault();
-                    fetch("/Snackery/Backend/logout.php", {
-                            credentials: "include"
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = "index.html";
-                            } else {
-                                alert("❌ Fehler beim Logout.");
-                            }
-                        })
-                        .catch(() => {
-                            alert("❌ Serverfehler beim Logout.");
-                        });
-                });
-            }
-        });
-    </script>
+    <script src="../js/add-product.js" defer></script>
 </head>
 
 <body>
 
+    <!-- ⬆ Navigation und Logout -->
     <header>
         <div class="logo">
             <a href="index.html">
@@ -95,6 +29,7 @@
         </nav>
     </header>
 
+    <!-- 📦 Formular für neues Produkt -->
     <main class="admin-container">
         <h2>Neues Produkt hinzufügen</h2>
 
@@ -112,6 +47,7 @@
         <p id="message"></p>
     </main>
 
+    <!-- ⬇ Fußbereich mit rechtlichen Links -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>

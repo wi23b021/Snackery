@@ -1,35 +1,33 @@
 <?php
-// ==============================================
-// Snackery – Logout API für JavaScript (fetch)
-// ==============================================
+// API-Endpunkt für Logout-Anfragen via fetch()
 
-// 1. Session starten
-session_start();
+// === Session starten ===
+session_start(); // Startet die aktuelle Session (falls noch aktiv)
 
-// 2. Session-Daten löschen
-session_unset();
-session_destroy();
+// === Alle Session-Daten löschen ===
+session_unset();       // Entfernt alle Session-Variablen
+session_destroy();     // Zerstört die Session komplett
 
-// 3. Session-Cookie löschen (nur wenn verwendet)
+// === Session-Cookie manuell löschen (optional, aber sicher) ===
 if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
+    $params = session_get_cookie_params(); // Cookie-Einstellungen holen
     setcookie(
-        session_name(), '',
-        time() - 42000,
-        $params["path"],
+        session_name(), '',               // Cookie leeren
+        time() - 42000,                   // Ablaufzeitpunkt in der Vergangenheit
+        $params["path"],                  // Gleiche Pfadangabe wie beim Setzen
         $params["domain"],
         $params["secure"],
         $params["httponly"]
     );
 }
 
-// 4. HTTP-Header für CORS und JSON-Antwort
-header("Access-Control-Allow-Origin: http://localhost");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
+// === Header für fetch() und CORS setzen ===
+header("Access-Control-Allow-Origin: http://localhost");   // Zugriff von Frontend erlauben
+header("Access-Control-Allow-Credentials: true");          // Session-Cookie akzeptieren
+header("Content-Type: application/json");                  // Antwort im JSON-Format
 
-// 5. Antwort senden
-http_response_code(200);
+// === JSON-Antwort zurückgeben ===
+http_response_code(200); // 200 OK
 echo json_encode([
     "success" => true,
     "message" => "Logout erfolgreich."

@@ -1,27 +1,23 @@
 <!DOCTYPE html>
-<!-- HTML5-Dokumentdeklaration -->
 <html lang="de">
-<!-- Sprache der Seite: Deutsch -->
 
 <head>
     <meta charset="UTF-8">
-    <!-- Zeichencodierung für Umlaute, Sonderzeichen etc. -->
-
     <title>Checkout – Snackery</title>
-    <!-- Browser-Titel -->
 
-    <!-- ======= STYLESHEET ======= -->
+    <!-- 🧠 Zentrales CSS-Design einbinden -->
     <link rel="stylesheet" href="../res/css/style.css">
-    <!-- Zentrales CSS für Design & Layout -->
 
-    <!-- ======= SESSION-CHECK ======= -->
-    <script src="../res/js/session-check.js" defer></script>
-    <!-- Externes JS prüft, ob der Benutzer eingeloggt ist ("defer" wartet auf komplettes HTML) -->
+    <!-- 🧠 Session-Check für Login und Rechte -->
+    <script src="../js/session-check.js" defer></script>
+
+    <!-- 🧠 JS für das Bestellformular (Warenkorb, Validierung, Versand) -->
+    <script src="../js/checkout.js" defer></script>
 </head>
 
 <body>
 
-    <!-- ========== HEADER MIT NAVIGATION ========== -->
+    <!-- === KOPFZEILE MIT NAVIGATION === -->
     <header>
         <div class="logo">
             <a href="index.html">
@@ -29,7 +25,6 @@
             </a>
         </div>
 
-        <!-- Navigation für eingeloggte Benutzer -->
         <nav>
             <ul>
                 <li><a href="index.html">Startseite</a></li>
@@ -42,23 +37,27 @@
         </nav>
     </header>
 
-    <!-- ========== HAUPTINHALT: CHECKOUT FORMULAR ========== -->
+    <!-- === INHALTSBEREICH: CHECKOUT-FORMULAR === -->
     <main style="padding: 40px;">
         <h1 style="text-align: center;">🛒 Checkout</h1>
 
+        <!-- 🧾 Formular zur Eingabe von Adresse und Zahlungsart -->
         <form id="checkoutForm" class="register-container">
+            <!-- Lieferadresse -->
             <h2>Lieferadresse</h2>
             <input type="text" name="street" placeholder="Straße" required>
             <input type="text" name="housenumber" placeholder="Hausnummer" required>
             <input type="text" name="postalcode" placeholder="PLZ" required>
             <input type="text" name="city" placeholder="Ort" required>
 
+            <!-- Zahlungsmethode -->
             <h2>Zahlungsmethode</h2>
             <select name="payment_method" id="paymentMethod" required>
                 <option value="">Bitte auswählen</option>
                 <option value="erlagschein">Erlagschein</option>
             </select>
 
+            <!-- Vorschau für Erlagschein -->
             <div id="erlagscheinPreview" style="display: none; margin-top: 20px;">
                 <h3>📄 Bankverbindung & Hinweise:</h3>
                 <p>Empfänger: Snackery e.U.</p>
@@ -67,17 +66,20 @@
                 <p>Lieferung erfolgt nach Zahlungseingang (ca. 7 Tage)</p>
             </div>
 
+            <!-- Übersicht der Produkte im Warenkorb -->
             <h2>Bestellübersicht</h2>
             <div id="orderSummary"></div>
             <h3 id="totalPrice">Gesamt: € 0.00</h3>
 
+            <!-- Abschicken der Bestellung -->
             <button type="submit">Bestellung abschicken</button>
         </form>
 
+        <!-- Rückmeldung bei Fehlern oder Erfolg -->
         <p id="feedbackMessage" style="margin-top:20px; font-weight: bold;"></p>
     </main>
 
-    <!-- ========== FUSSZEILE ========== -->
+    <!-- === FUSSZEILE === -->
     <footer>
         <div class="footer-content">
             <p>&copy; 2025 Snackery</p>
@@ -87,108 +89,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- ========== JAVASCRIPT ========== -->
-    <script>
-        let cart = [];
-
-        function loadCart() {
-            cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const summary = document.getElementById("orderSummary");
-            const totalPriceElement = document.getElementById("totalPrice");
-
-            summary.innerHTML = "";
-
-            if (cart.length === 0) {
-                summary.innerHTML = "<p>🧺 Dein Warenkorb ist leer.</p>";
-                totalPriceElement.textContent = "Gesamt: € 0.00";
-                return;
-            }
-
-            let total = 0;
-            cart.forEach(item => {
-                const div = document.createElement("div");
-                div.innerHTML = `<p><strong>${item.name}</strong> – € ${parseFloat(item.price).toFixed(2)} x ${item.quantity}</p>`;
-                summary.appendChild(div);
-                total += item.price * item.quantity;
-            });
-
-            totalPriceElement.textContent = `Gesamt: € ${total.toFixed(2)}`;
-        }
-
-        document.getElementById("paymentMethod").addEventListener("change", (e) => {
-            document.getElementById("erlagscheinPreview").style.display =
-                e.target.value === "erlagschein" ? "block" : "none";
-        });
-
-        document.getElementById("checkoutForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-
-            if (cart.length === 0) {
-                alert("❌ Dein Warenkorb ist leer!");
-                return;
-            }
-
-            const formData = new FormData(this);
-            formData.append("cart", JSON.stringify(cart));
-
-            fetch("/Snackery/Backend/logic/requestHandler.php?action=placeOrder", {
-                    method: "POST",
-                    body: formData,
-                    credentials: "include"
-                })
-                .then(async res => {
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.message || "Unbekannter Fehler");
-                    return data;
-                })
-                .then(data => {
-                    localStorage.removeItem("cart");
-                    window.location.href = "checkout_success.html";
-                })
-                .catch(err => {
-                    console.error("❌ Fehler:", err);
-                    document.getElementById("feedbackMessage").textContent = "❌ " + err.message;
-                });
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            loadCart();
-
-            // Logout
-            const logoutBtn = document.getElementById("logoutBtn");
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", function(e) {
-                    e.preventDefault();
-                    fetch("/Snackery/Backend/logout.php", {
-                            credentials: "include"
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = "index.html";
-                            } else {
-                                alert("❌ Logout fehlgeschlagen.");
-                            }
-                        })
-                        .catch(() => {
-                            alert("❌ Serverfehler beim Logout.");
-                        });
-                });
-            }
-
-            // Meine Bestellungen sichtbar machen wenn eingeloggt
-            fetch("/Snackery/Backend/sessionStatus.php", {
-                    credentials: "include"
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn) {
-                        document.getElementById("myOrdersLink").style.display = "inline";
-                    }
-                });
-        });
-    </script>
 
 </body>
 
